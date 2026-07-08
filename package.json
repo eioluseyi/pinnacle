@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "socket": "tsx socket-server/server.ts",
+    "dev": "concurrently -k -n socket,next -c blue,green \"yarn socket\" \"wait-on tcp:localhost:1234 && next dev\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently -k -n socket,next -c blue,green \"yarn socket\" \"wait-on tcp:localhost:1234 && next start\"",
     "lint": "eslint"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -27,6 +29,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.20.3",
+    "typescript": "^5",
+    "wait-on": "^8.0.4"
   }
 }
