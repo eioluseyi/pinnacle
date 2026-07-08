@@ -5,25 +5,9 @@ import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 import Image from 'next/image';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
-// function fileToBase64(file: File) {
-//   return new Promise((resolve, reject) => {
-//     const reader = new FileReader();
-
-//     // Read the file as a data URL (Base64 string)
-//     reader.readAsDataURL(file);
-
-//     // On success, resolve the promise with the result
-//     reader.onload = () => resolve(reader.result);
-
-//     // On error, reject the promise
-//     reader.onerror = (error) => reject(error);
-//   });
-// }
-
 export type ImageObject = {
   name: string;
   src: string;
-  // base64: unknown;
 };
 export default function Home() {
   const socket = useSocket();

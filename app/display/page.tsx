@@ -19,8 +19,6 @@ export default function Display() {
     return () => socket.disconnect();
   }, []);
 
-  console.log({ displayData });
-
   return (
     <div className='grid place-items-center flex-1'>
       {displayData?.src && (
