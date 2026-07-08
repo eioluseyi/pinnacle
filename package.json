@@ -2,7 +2,7 @@
   "name": "pinnacle",
   "version": "0.1.0",
   "private": true,
-  "main": "main.js",
+  "main": "electron/main.js",
   "type": "module",
   "scripts": {
     "socket": "tsx socket-server/server.ts",
@@ -11,7 +11,8 @@
     "next-start": "concurrently -k -n socket,next -c blue,green \"yarn socket\" \"wait-on tcp:localhost:1234 && next start\"",
     "lint": "eslint",
     "electron": "electron .",
-    "start": "electron-forge start",
+    "desktop": "concurrently \"yarn dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "start": "concurrently \"yarn dev\" \"wait-on http://localhost:3000 && electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
