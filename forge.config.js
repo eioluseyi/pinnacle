@@ -3,15 +3,15 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 export const packagerConfig = {
   asar: true,
-  icon: ['/public/assets/icons/icon.icns', '/public/assets/icons/icon.icon'],
+  icon: 'public/assets/icons/icon',
 };
 export const rebuildConfig = {};
 export const makers = [
   {
     name: '@electron-forge/maker-squirrel',
     config: {
-      iconUrl: '/public/assets/icons/icon.ico',
-      setupIcon: '/public/assets/icons/icon.ico',
+      iconUrl: 'public/assets/icons/icon.ico',
+      setupIcon: 'public/assets/icons/icon.ico',
     },
   },
   {
@@ -22,13 +22,13 @@ export const makers = [
     name: '@electron-forge/maker-deb',
     config: {
       options: {
-        icon: '/public/assets/icons/icon.png',
+        icon: 'public/assets/icons/icon.png',
       },
     },
   },
   {
     name: '@electron-forge/maker-rpm',
-    config: { icon: '/public/assets/icons/icon.icns' },
+    config: { icon: 'public/assets/icons/icon.icns' },
   },
 ];
 export const plugins = [
