@@ -1,65 +1,189 @@
-import Image from "next/image";
+'use client';
+import { useSocket } from '@/hooks/useSocket';
+import classNames from 'classnames';
+import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
+import Image from 'next/image';
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
+// function fileToBase64(file: File) {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+
+//     // Read the file as a data URL (Base64 string)
+//     reader.readAsDataURL(file);
+
+//     // On success, resolve the promise with the result
+//     reader.onload = () => resolve(reader.result);
+
+//     // On error, reject the promise
+//     reader.onerror = (error) => reject(error);
+//   });
+// }
+
+export type ImageObject = {
+  name: string;
+  src: string;
+  // base64: unknown;
+};
 export default function Home() {
+  const socket = useSocket();
+  const [images, setImages] = useState<ImageObject[]>([]);
+  const [displayValue, setDisplayValue] = useState<string | null>(null);
+  const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
+
+  async function handleUpload(file: File) {
+    if (!file) return '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+
+      console.log('Uploaded:', data.url);
+      return data.url as string;
+    } catch (err) {
+      console.error(err, file.name);
+      return '';
+    }
+  }
+
+  const sendUpdate = useCallback(
+    (payload?: ImageObject) => {
+      socket.emit('update-display', payload);
+    },
+    [socket],
+  );
+
+  const handleImageSelection: ChangeEventHandler<HTMLInputElement, HTMLInputElement> = async (e) => {
+    e.preventDefault();
+
+    const filesObject = e.target.files;
+    if (!filesObject) return;
+
+    const files = Array.from(filesObject);
+    if (files) {
+      const imagesWithBase64 = await Promise.all(
+        files.map(async (file) => {
+          const src = await handleUpload(file);
+
+          return {
+            name: file.name,
+            src,
+          };
+        }),
+      );
+
+      setImages(imagesWithBase64);
+    }
+  };
+
+  const previousImage = () => {
+    if (!images.length) return;
+
+    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
+    const previousImageIndex = (() => {
+      if (currentImageIndex === 0) return images.length - 1;
+      return currentImageIndex - 1;
+    })();
+    setDisplayValue(images[previousImageIndex].name);
+  };
+
+  const nextImage = () => {
+    if (!images.length) return;
+
+    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
+    const nextImageIndex = (() => {
+      if (currentImageIndex === images.length - 1) return 0;
+      return currentImageIndex + 1;
+    })();
+    setDisplayValue(images[nextImageIndex].name);
+  };
+
+  useEffect(() => {
+    sendUpdate(displayImage);
+  }, [displayImage, sendUpdate]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className='flex-1 bg-zinc-50 font-sans dark:bg-black p-10'>
+      <h1 className='text-4xl font-bold text-center w-full mb-10'>Control Panel</h1>
+      <div className='flex max-w-6xl mx-auto gap-4'>
+        <main className='grid flex-1 gap-10 h-full'>
+          <h2 className='text-2xl font-bold'>Image control</h2>
+          <input
+            className='cursor-pointer outline outline-dashed outline-zinc-600 -outline-offset-2 rounded px-8 py-12'
+            type='file'
+            name='images'
+            placeholder='Click to select or Drop Image(s) here...'
+            accept='image/*'
+            multiple
+            onChange={handleImageSelection}
+          />
+          <div role='radiogroup' className='flex flex-wrap gap-2 mt-20'>
+            {images.map((image) => (
+              <label
+                key={image.name}
+                className={classNames(
+                  'cursor-pointer overflow-hidden rounded outline-4 outline-transparent focus-visible:outline-sky-900 transition-colors duration-300 ease-out fo',
+                  image.name === displayImage?.name && 'outline-sky-600!',
+                )}>
+                <input
+                  id={image.name}
+                  className='pointer-events-none opacity-0 absolute'
+                  type='radio'
+                  name='display'
+                  value={image.name}
+                  onChange={() => setDisplayValue(image.name)}
+                />
+                <Image
+                  src={image.src}
+                  alt={image.name}
+                  className='object-cover w-auto h-16'
+                  width={1000}
+                  height={1000}
+                />
+              </label>
+            ))}
+          </div>
+        </main>
+        <aside className='grid gap-10 h-full w-80'>
+          <h2 className='text-2xl font-bold'>Display</h2>
+          <div className='grid gap-8'>
+            {displayImage && (
+              <>
+                <Image
+                  src={displayImage?.src || ''}
+                  alt={displayImage?.name || ''}
+                  className='object-cover w-full h-auto rounded'
+                  width={1000}
+                  height={1000}
+                />
+                <div className='flex gap-10 justify-between max-w-40 mx-auto'>
+                  <button
+                    className='rounded-full bg-zinc-100 w-7 h-7 grid place-items-center cursor-pointer hover:bg-zinc-300 transition-colors duration-300 ease-out'
+                    onClick={previousImage}>
+                    <ArrowLeftIcon className='text-background' />
+                  </button>
+                  <button
+                    className='rounded-full bg-zinc-100 w-7 h-7 grid place-items-center cursor-pointer hover:bg-zinc-300 transition-colors duration-300 ease-out'
+                    onClick={nextImage}>
+                    <ArrowRightIcon className='text-background' />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
