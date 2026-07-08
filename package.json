@@ -2,13 +2,18 @@
   "name": "pinnacle",
   "version": "0.1.0",
   "private": true,
+  "main": "main.js",
+  "type": "module",
   "scripts": {
     "socket": "tsx socket-server/server.ts",
     "dev": "concurrently -k -n socket,next -c blue,green \"yarn socket\" \"wait-on tcp:localhost:1234 && next dev\"",
     "build": "next build",
-    "start": "concurrently -k -n socket,next -c blue,green \"yarn socket\" \"wait-on tcp:localhost:1234 && next start\"",
-    "lint": "eslint"
+    "next-start": "concurrently -k -n socket,next -c blue,green \"yarn socket\" \"wait-on tcp:localhost:1234 && next start\"",
+    "lint": "eslint",
+    "electron": "electron ."
   },
+  "author": "Emmanuel (EIO) Imolorhe | @eioluseyi",
+  "license": "MIT",
   "dependencies": {
     "@types/express": "^5.0.6",
     "classnames": "^2.5.1",
@@ -21,11 +26,12 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "electron": "^43.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
