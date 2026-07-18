@@ -8,10 +8,12 @@ export const useSocket = () => {
 
   useEffect(() => {
     // Connect to your Express server URL
-    socket.current = io('http://192.168.1.143:1234');
+    socket.current = io('http://localhost:1234');
 
     // Cleanup on unmount
-    return () => socket.current?.disconnect();
+    return () => {
+      socket.current?.disconnect();
+    };
   }, []);
 
   const controls = { socket, emit };

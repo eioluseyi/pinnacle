@@ -15,6 +15,11 @@ export default function Home() {
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
 
+  useEffect(() => {
+    console.log(window.location.href);
+    console.log(window.location.origin);
+  }, []);
+
   async function handleUpload(file: File) {
     if (!file) return '';
 
@@ -56,7 +61,7 @@ export default function Home() {
 
     const files = Array.from(filesObject);
     if (files) {
-      const imagesWithBase64 = await Promise.all(
+      const imageObjects = await Promise.all(
         files.map(async (file) => {
           const src = await handleUpload(file);
 
@@ -67,7 +72,7 @@ export default function Home() {
         }),
       );
 
-      setImages(imagesWithBase64);
+      setImages(imageObjects);
     }
   };
 

@@ -9,14 +9,16 @@ export default function Display() {
   const [displayData, setDisplayData] = useState<ImageObject>();
 
   useEffect(() => {
-    const socket = io('http://192.168.1.143:1234');
+    const socket = io('http://localhost:1234');
 
     socket.on('display-updated', (data) => {
       console.log('Received:', data);
       setDisplayData(data);
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   return (
