@@ -9,7 +9,7 @@ export default function Display() {
   const [displayData, setDisplayData] = useState<ImageObject>();
 
   useEffect(() => {
-    const socket = io('http://localhost:1234');
+    const socket = io('http://192.168.2.210:1234');
 
     socket.on('display-updated', (data) => {
       console.log('Received:', data);
@@ -24,12 +24,12 @@ export default function Display() {
   return (
     <div className='grid place-items-center flex-1'>
       {displayData?.src && (
-        <Image
+        <img
           src={displayData?.src || ''}
           alt={displayData?.name || ''}
           className='w-full h-auto'
-          width={1000}
-          height={1000}
+          // width={3840}
+          // height={2160}
         />
       )}
     </div>
