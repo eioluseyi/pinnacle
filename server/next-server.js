@@ -23,9 +23,9 @@ export async function startNextServer({ port = 3000 }) {
   app.use('/bucket', express.static(bucketDir));
   app.use((_, res) => res.status(404).sendFile(path.join(staticDir, '404')));
 
-  app.listen(port, '0.0.0.0', () => {
+  const server = app.listen(port, '0.0.0.0', () => {
     console.log(`Server running on http://${IP_ADDRESS}:${port}`);
   });
 
-  return app;
+  return server;
 }
