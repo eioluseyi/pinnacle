@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import { useSocket } from '@/hooks/useSocket';
 import classNames from 'classnames';
@@ -133,13 +134,7 @@ export default function Home() {
                   value={image.name}
                   onChange={() => setDisplayValue(image.name)}
                 />
-                <Image
-                  src={image.src}
-                  alt={image.name}
-                  className='object-cover w-auto h-16'
-                  width={1000}
-                  height={1000}
-                />
+                <img src={image.src} alt={image.name} className='object-cover w-auto h-16' />
               </label>
             ))}
           </div>
@@ -149,12 +144,10 @@ export default function Home() {
           <div className='grid gap-8'>
             {displayImage && (
               <>
-                <Image
+                <img
                   src={displayImage?.src || ''}
                   alt={displayImage?.name || ''}
                   className='object-cover w-full h-auto rounded'
-                  width={1000}
-                  height={1000}
                 />
                 <div className='flex gap-10 justify-between max-w-40 mx-auto'>
                   <button

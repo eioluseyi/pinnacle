@@ -5,7 +5,7 @@ import path from 'node:path';
 export const packagerConfig = {
   asar: true,
   icon: 'public/assets/icons/icon',
-  extraResource: [path.resolve('server'), path.resolve('.next'), path.resolve('public')],
+  extraResource: [path.resolve('server')],
 };
 export const rebuildConfig = {};
 export const makers = [

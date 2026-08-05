@@ -1,38 +1,27 @@
-import next from 'next';
-import http from 'node:http';
-import { fork } from 'child_process';
+import express from 'express';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import uploadRouter from './api/upload.js';
 
-const appDir = process.resourcesPath;
+// Recreate __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
 
 export async function startNextServer({ port = 3000 }) {
-  //   const hostname = '0.0.0.0';
-  //   const dev = false;
-  //   const nextApp = next({
-  //     dev,
-  //     hostname,
-  //     port,
-  //     dir: appDir,
-  //   });
+  const staticDir = path.join(__dirname, '../next-out');
+  const bucketDir = path.join(electronApp.getPath('userData'), 'bucket');
 
-  const nextApp = fork(path.join(appDir, '.next/standalone/server.js'), [], {
-    env: {
-      ...process.env,
-      PORT: '3000',
-    },
+  // Serve static assets
+  app.use(express.static(staticDir));
+  app.use(uploadRouter);
+  app.use('/bucket', express.static(bucketDir));
+  app.use((_, res) => res.status(404).sendFile(path.join(staticDir, '404')));
+
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
   });
 
-  await nextApp.prepare();
-
-  const handler = nextApp.getRequestHandler();
-
-  const server = http.createServer((req, res) => {
-    handler(req, res);
-  });
-
-  server.listen(port, hostname, () => {
-    console.log(`Next running at http://${hostname}:${port}`);
-  });
-
-  return server;
+  return app;
 }

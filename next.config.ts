@@ -11,7 +11,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  output: 'standalone',
+  output: 'export',
+  distDir: 'next-out',
+  trailingSlash: true,
 };
 
 export default nextConfig;
