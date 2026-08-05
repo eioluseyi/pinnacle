@@ -5,8 +5,12 @@ export const useIpAddress = () => {
 
   useEffect(() => {
     let currentIp = ipAddress;
+    let unsubscribe: (() => void) | undefined;
 
     const updateIpAddress = async () => {
+      unsubscribe = window?.electron?.onIpChanged?.((ip) => {
+        if (ip) setIpAddress(ip);
+      });
       const newIp = (await window.electron?.getLocalIp?.()) || window.location.hostname;
       // Only update state and interval timer if IP has changed
       if (newIp !== currentIp) {
@@ -22,7 +26,10 @@ export const useIpAddress = () => {
     let timerId = setInterval(updateIpAddress, 500);
 
     // Clean up the interval when component unmounts
-    return () => clearInterval(timerId);
+    return () => {
+      clearInterval(timerId);
+      unsubscribe?.();
+    };
     // Move this to unresponsive app troubleshooting method, not on a cron job
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

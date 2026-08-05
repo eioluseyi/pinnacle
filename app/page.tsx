@@ -7,6 +7,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
 export type ImageObject = {
+  id: string;
   name: string;
   src: string;
 };
@@ -17,10 +18,30 @@ export default function Home() {
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
   const { ipAddress } = useIpAddress();
 
-  useEffect(() => {
-    console.log(window.location.href);
-    console.log(window.location.origin);
+  const loadImages = useCallback(async () => {
+    const response = await fetch('/api/upload');
+    const data = await response.json();
+    return data;
   }, []);
+
+  const deleteImage = useCallback(
+    async (image: ImageObject) => {
+      await fetch('/api/upload', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(image),
+      });
+
+      setImages((current) => current.filter((img) => img.src !== image.src));
+
+      if (displayValue === image.name) {
+        setDisplayValue(null);
+      }
+    },
+    [displayValue],
+  );
 
   async function handleUpload(file: File) {
     if (!file) return '';
@@ -68,13 +89,14 @@ export default function Home() {
           const src = await handleUpload(file);
 
           return {
+            id: file.name,
             name: file.name,
             src,
           };
         }),
       );
 
-      setImages(imageObjects);
+      setImages((current) => [...current, ...imageObjects]);
     }
   };
 
@@ -104,6 +126,13 @@ export default function Home() {
     sendUpdate(displayImage);
   }, [displayImage, sendUpdate]);
 
+  useEffect(() => {
+    (async () => {
+      const data = await loadImages();
+      setImages(data);
+    })();
+  }, [loadImages]);
+
   return (
     <div className='flex-1 bg-zinc-50 font-sans dark:bg-black p-10'>
       <h1 className='text-4xl font-bold text-center w-full mb-1'>Control Panel</h1>
@@ -125,7 +154,7 @@ export default function Home() {
               <label
                 key={image.name}
                 className={classNames(
-                  'cursor-pointer overflow-hidden rounded outline-4 outline-transparent focus-visible:outline-sky-900 transition-colors duration-300 ease-out fo',
+                  'relative cursor-pointer overflow-hidden rounded outline-4 outline-transparent focus-visible:outline-sky-900 transition-colors duration-300 ease-out fo',
                   image.name === displayImage?.name && 'outline-sky-600!',
                 )}>
                 <input
@@ -137,6 +166,17 @@ export default function Home() {
                   onChange={() => setDisplayValue(image.name)}
                 />
                 <img src={image.src} alt={image.name} className='object-cover w-auto h-16' />
+                <button
+                  type='button'
+                  className='absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs hover:bg-red-600'
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    await deleteImage(image);
+                  }}>
+                  ×
+                </button>
               </label>
             ))}
           </div>

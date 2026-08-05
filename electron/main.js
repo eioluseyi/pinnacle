@@ -15,11 +15,23 @@ let socketServer;
 
 const NEXT_PORT = 3000;
 const SOCKET_PORT = 1234;
-const IP_ADDRESS = getLocalIpAddress();
 
 ipcMain.handle('get-local-ip', () => {
   return getLocalIpAddress();
 });
+
+let currentIp = getLocalIpAddress();
+setInterval(() => {
+  const nextIp = getLocalIpAddress();
+
+  if (nextIp !== currentIp) {
+    currentIp = nextIp;
+
+    BrowserWindow.getAllWindows().forEach((win) => {
+      win.webContents.send('network:ip-changed', nextIp);
+    });
+  }
+}, 2000);
 
 async function createWindow() {
   const win = new BrowserWindow({
@@ -33,7 +45,7 @@ async function createWindow() {
   });
 
   await waitForServer(NEXT_PORT);
-  await win.loadURL(`http://${IP_ADDRESS}:${NEXT_PORT}`);
+  await win.loadURL(`http://localhost:${NEXT_PORT}`);
 
   return win;
 }
@@ -41,7 +53,7 @@ async function createWindow() {
 async function waitForServer(port) {
   while (true) {
     try {
-      await fetch(`http://${IP_ADDRESS}:${port}`);
+      await fetch(`http://localhost:${port}`);
       return;
     } catch {
       await new Promise((resolve) => setTimeout(resolve, 200));

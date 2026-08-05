@@ -3,4 +3,11 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
   getLocalIp: () => ipcRenderer.invoke('get-local-ip'),
+  onIpChanged: (callback) => {
+    const listener = (_, ip) => callback(ip);
+    ipcRenderer.on('network:ip-changed', listener);
+    return () => {
+      ipcRenderer.removeListener('network:ip-changed', listener);
+    };
+  },
 });
