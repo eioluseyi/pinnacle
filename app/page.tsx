@@ -14,14 +14,51 @@ export type ImageObject = {
 export default function Home() {
   const socket = useSocket();
   const [images, setImages] = useState<ImageObject[]>([]);
+  const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
   const { ipAddress } = useIpAddress();
 
+  const handleDragStart = (image: ImageObject) => {
+    setDraggedImage(image);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (targetImage: ImageObject) => {
+    if (!draggedImage || draggedImage.id === targetImage.id) {
+      return;
+    }
+
+    setImages((current) => {
+      const fromIndex = current.findIndex((image) => image.id === draggedImage.id);
+
+      const toIndex = current.findIndex((image) => image.id === targetImage.id);
+
+      const updated = [...current];
+
+      const [removed] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, removed);
+
+      return updated;
+    });
+
+    setDraggedImage(null);
+  };
+
   const loadImages = useCallback(async () => {
     const response = await fetch('/api/upload');
-    const data = await response.json();
-    return data;
+    const serverImages: ImageObject[] = await response.json();
+
+    const savedOrder = JSON.parse(localStorage.getItem('image-order') || '[]');
+
+    const ordered = savedOrder.length
+      ? savedOrder.map((id: string) => serverImages.find((image) => image.id === id)).filter(Boolean)
+      : serverImages;
+
+    return ordered as ImageObject[];
   }, []);
 
   const deleteImage = useCallback(
@@ -133,6 +170,10 @@ export default function Home() {
     })();
   }, [loadImages]);
 
+  useEffect(() => {
+    localStorage.setItem('image-order', JSON.stringify(images.map((image) => image.id)));
+  }, [images]);
+
   return (
     <div className='flex-1 bg-zinc-50 font-sans dark:bg-black p-10'>
       <h1 className='text-4xl font-bold text-center w-full mb-1'>Control Panel</h1>
@@ -152,7 +193,11 @@ export default function Home() {
           <div role='radiogroup' className='flex flex-wrap gap-2 mt-20'>
             {images.map((image) => (
               <label
-                key={image.name}
+                key={image.id}
+                draggable
+                onDragStart={() => handleDragStart(image)}
+                onDragOver={handleDragOver}
+                onDrop={() => handleDrop(image)}
                 className={classNames(
                   'relative cursor-pointer overflow-hidden rounded outline-4 outline-transparent focus-visible:outline-sky-900 transition-colors duration-300 ease-out fo',
                   image.name === displayImage?.name && 'outline-sky-600!',
