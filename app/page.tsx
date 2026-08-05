@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
+import { useIpAddress } from '@/hooks/useIpAddress';
 import { useSocket } from '@/hooks/useSocket';
 import classNames from 'classnames';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
-import Image from 'next/image';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
 export type ImageObject = {
@@ -15,6 +15,7 @@ export default function Home() {
   const [images, setImages] = useState<ImageObject[]>([]);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
+  const { ipAddress } = useIpAddress();
 
   useEffect(() => {
     console.log(window.location.href);
@@ -105,7 +106,8 @@ export default function Home() {
 
   return (
     <div className='flex-1 bg-zinc-50 font-sans dark:bg-black p-10'>
-      <h1 className='text-4xl font-bold text-center w-full mb-10'>Control Panel</h1>
+      <h1 className='text-4xl font-bold text-center w-full mb-1'>Control Panel</h1>
+      <p className='text-center w-full mb-10'>IP: {ipAddress}</p>
       <div className='flex max-w-6xl mx-auto gap-4'>
         <main className='grid flex-1 gap-10 h-full'>
           <h2 className='text-2xl font-bold'>Image control</h2>

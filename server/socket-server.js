@@ -1,9 +1,11 @@
 import express from 'express';
 import http from 'node:http';
 import { Server } from 'socket.io';
+import { getLocalIpAddress } from '../electron/utils.js';
 
 export const startSocketServer = ({ port = 1234 } = {}) => {
   const app = express();
+  const IP_ADDRESS = getLocalIpAddress();
 
   const server = http.createServer(app);
 
@@ -40,7 +42,7 @@ export const startSocketServer = ({ port = 1234 } = {}) => {
   });
 
   server.listen(port, '0.0.0.0', () => {
-    console.log(`Socket.IO server running on http://0.0.0.0:${port}`);
+    console.log(`Socket.IO server running on http://${IP_ADDRESS}:${port}`);
   });
 
   return {

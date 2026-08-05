@@ -1,5 +1,6 @@
-import { contextBridge } from 'electron';
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
-  version: process.versions.electron,
+  getLocalIp: () => ipcRenderer.invoke('get-local-ip'),
 });

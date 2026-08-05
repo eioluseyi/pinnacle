@@ -4,10 +4,13 @@ import multer from 'multer';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { app as electronApp } from 'electron/main';
 
 const router = express.Router();
 
-const bucketDir = path.join(process.cwd(), 'public', 'bucket');
+const standAloneBucketDir = path.join(electronApp.getPath('userData'), 'bucket');
+const appRootBucketDir = path.join(process.cwd(), 'public', 'bucket');
+const bucketDir = electronApp.getPath('userData') ? standAloneBucketDir : appRootBucketDir;
 
 // Store uploads in memory first (similar to file.arrayBuffer())
 const upload = multer({
