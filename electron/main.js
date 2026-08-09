@@ -17,7 +17,10 @@ const NEXT_PORT = 3000;
 const SOCKET_PORT = 1234;
 
 ipcMain.handle('get-local-ip', () => {
-  return getLocalIpAddress();
+  const ip = getLocalIpAddress();
+  const port = { socket: SOCKET_PORT, next: NEXT_PORT };
+
+  return { ip, port };
 });
 
 let currentIp = getLocalIpAddress();
@@ -28,7 +31,7 @@ setInterval(() => {
     currentIp = nextIp;
 
     BrowserWindow.getAllWindows().forEach((win) => {
-      win.webContents.send('network:ip-changed', nextIp);
+      win.webContents.send('network:ip-changed', nextIp, { socket: SOCKET_PORT, next: NEXT_PORT });
     });
   }
 }, 2000);

@@ -109,7 +109,6 @@ router.delete('/api/upload', express.json(), async (req, res) => {
 
     const filepath = path.join(bucketDir, id);
     await fs.unlink(filepath);
-    console.log('Deleted ', filepath);
 
     res.json({
       success: true,

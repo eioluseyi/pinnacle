@@ -17,7 +17,7 @@ export default function Home() {
   const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
-  const { ipAddress } = useIpAddress();
+  const { ipAddress, portNumber } = useIpAddress();
 
   const handleDragStart = (image: ImageObject) => {
     setDraggedImage(image);
@@ -34,14 +34,11 @@ export default function Home() {
 
     setImages((current) => {
       const fromIndex = current.findIndex((image) => image.id === draggedImage.id);
-
       const toIndex = current.findIndex((image) => image.id === targetImage.id);
-
       const updated = [...current];
-
       const [removed] = updated.splice(fromIndex, 1);
-      updated.splice(toIndex, 0, removed);
 
+      updated.splice(toIndex, 0, removed);
       return updated;
     });
 
@@ -98,8 +95,7 @@ export default function Home() {
         throw new Error(data.error);
       }
 
-      console.log('Uploaded:', data.url);
-      return data.url as string;
+      return data.image?.src as string;
     } catch (err) {
       console.error(err, file.name);
       return '';
@@ -177,7 +173,9 @@ export default function Home() {
   return (
     <div className='flex-1 bg-zinc-50 font-sans dark:bg-black p-10'>
       <h1 className='text-4xl font-bold text-center w-full mb-1'>Control Panel</h1>
-      <p className='text-center w-full font-bold mb-10'>{ipAddress}</p>
+      <p className='text-center w-full font-bold mb-10'>
+        {ipAddress}:{portNumber}
+      </p>
       <div className='flex max-w-6xl mx-auto gap-4'>
         <main className='grid flex-1 gap-10 h-full'>
           <h2 className='text-2xl font-bold'>Image control</h2>

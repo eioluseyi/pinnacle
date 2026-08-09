@@ -11,11 +11,10 @@ const __dirname = path.dirname(__filename);
 
 export async function startNextServer({ port = 3000 }) {
   const app = express();
-  const IP_ADDRESS = getLocalIpAddress();
+  const IP_ADDRESS = getLocalIpAddress() || 'localhost';
   const staticDir = path.join(__dirname, '../next-out');
   const standAloneBucketDir = path.join(electronApp.getPath('userData'), 'bucket');
-  const appRootBucketDir = path.join(process.cwd(), 'public', 'bucket');
-  const bucketDir = electronApp.getPath('userData') ? standAloneBucketDir : appRootBucketDir;
+  const bucketDir = standAloneBucketDir;
 
   // Serve static assets
   app.use(express.static(staticDir));

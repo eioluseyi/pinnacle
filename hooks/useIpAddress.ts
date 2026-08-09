@@ -1,38 +1,70 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-export const useIpAddress = () => {
+type UseIpAddressProps = {
+  type: 'next' | 'socket';
+};
+export const useIpAddress = ({ type }: UseIpAddressProps = { type: 'next' }) => {
   const [ipAddress, setIpAddress] = useState('0.0.0.0');
+  const [portNumber, setPortNumber] = useState(type === 'next' ? '3000' : '1234');
+  const currentIp = useRef(ipAddress);
+  const currentPort = useRef(portNumber);
+
+  const setIp = (ip: string | null) => {
+    const formattedIp = ip || window.location.hostname;
+    if (currentIp.current !== formattedIp) {
+      currentIp.current = formattedIp;
+      setIpAddress(currentIp.current);
+    }
+  };
+
+  const setPort = (
+    port: {
+      socket: string | null;
+      next: string | null;
+    } | null,
+  ) => {
+    switch (type) {
+      case 'socket':
+        if (currentPort.current !== port?.socket) {
+          if (!port?.socket) return;
+          currentPort.current = port.socket;
+          setPortNumber(currentPort.current);
+        }
+        return;
+      case 'next':
+      default:
+        if (currentPort.current !== port?.next) {
+          if (!port?.next) return;
+          currentPort.current = port.next;
+          setPortNumber(currentPort.current);
+        }
+        return;
+    }
+  };
 
   useEffect(() => {
-    let currentIp = ipAddress;
     let unsubscribe: (() => void) | undefined;
 
-    const updateIpAddress = async () => {
-      unsubscribe = window?.electron?.onIpChanged?.((ip) => {
-        if (ip) setIpAddress(ip);
+    (async () => {
+      unsubscribe = window?.electron?.onIpChanged?.((ip, port) => {
+        setIp(ip);
+        setPort(port);
       });
-      const newIp = (await window.electron?.getLocalIp?.()) || window.location.hostname;
-      // Only update state and interval timer if IP has changed
-      if (newIp !== currentIp) {
-        currentIp = newIp;
-        setIpAddress(newIp);
-        // Clear old interval and start a new one with appropriate delay
-        clearInterval(timerId);
-        timerId = setInterval(updateIpAddress, 60_000);
-      }
-    };
 
-    // Use ref to store timerId so clearInterval works correctly
-    let timerId = setInterval(updateIpAddress, 500);
+      const localIp = await window?.electron?.getLocalIp?.();
+      if (!localIp) return;
+      const { ip, port } = localIp;
+      setIp(ip);
+      setPort(port);
+    })();
 
     // Clean up the interval when component unmounts
     return () => {
-      clearInterval(timerId);
       unsubscribe?.();
     };
     // Move this to unresponsive app troubleshooting method, not on a cron job
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { ipAddress };
+  return { ipAddress, portNumber };
 };
