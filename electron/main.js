@@ -31,6 +31,7 @@ setInterval(() => {
     currentIp = nextIp;
 
     BrowserWindow.getAllWindows().forEach((win) => {
+      //Todo: Implement dynamic port handling
       win.webContents.send('network:ip-changed', nextIp, { socket: SOCKET_PORT, next: NEXT_PORT });
     });
   }
@@ -48,7 +49,7 @@ async function createWindow() {
   });
 
   await waitForServer(NEXT_PORT);
-  await win.loadURL(`http://localhost:${NEXT_PORT}`);
+  await win.loadURL(`http://localhost:${NEXT_PORT}/controls`);
 
   return win;
 }
