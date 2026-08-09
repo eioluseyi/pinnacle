@@ -9,7 +9,7 @@ export const useIpAddress = ({ type }: UseIpAddressProps = { type: 'next' }) => 
   const currentIp = useRef(ipAddress);
   const currentPort = useRef(portNumber);
 
-  const setIp = (ip: string | null) => {
+  const setIp = (ip?: string | null) => {
     const formattedIp = ip || window.location.hostname;
     if (currentIp.current !== formattedIp) {
       currentIp.current = formattedIp;
@@ -18,7 +18,7 @@ export const useIpAddress = ({ type }: UseIpAddressProps = { type: 'next' }) => 
   };
 
   const setPort = (
-    port: {
+    port?: {
       socket: string | null;
       next: string | null;
     } | null,
@@ -52,10 +52,8 @@ export const useIpAddress = ({ type }: UseIpAddressProps = { type: 'next' }) => 
       });
 
       const localIp = await window?.electron?.getLocalIp?.();
-      if (!localIp) return;
-      const { ip, port } = localIp;
-      setIp(ip);
-      setPort(port);
+      setIp(localIp?.ip);
+      setPort(localIp?.port);
     })();
 
     // Clean up the interval when component unmounts
