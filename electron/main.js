@@ -49,7 +49,7 @@ async function createWindow() {
   });
 
   await waitForServer(NEXT_PORT);
-  await win.loadURL(`http://localhost:${NEXT_PORT}/controls`);
+  await win.loadURL(`http://localhost:${NEXT_PORT}/splash-screen`);
 
   return win;
 }
