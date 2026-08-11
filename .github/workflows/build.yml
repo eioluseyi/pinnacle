@@ -1,6 +1,6 @@
 name: Build and Publish Release
 
-# Triggers automatically when you run `npm version patch` (or minor/major)
+# Triggers automatically when you run `yarn version --new-version patch` (or minor/major)
 # and push the generated tag (e.g., v1.0.1)
 on:
   push:
@@ -47,11 +47,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'yarn'
 
-      # 3. Install NPM dependencies cleanly
+      # 3. Install dependencies with Yarn
       - name: Install Dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile # Ensures exact versions from yarn.lock are installed
 
       # 4. macOS Specific: Setup Code Signing (Optional)
       # Uncomment if you add Apple Developer credentials to GitHub Repository Secrets
