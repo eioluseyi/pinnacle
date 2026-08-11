@@ -51,7 +51,9 @@ jobs:
 
       # 3. Install dependencies with Yarn
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile # Ensures exact versions from yarn.lock are installed
+        run: |
+          git config --global http.sslVerify false
+          yarn install --frozen-lockfile # Ensures exact versions from yarn.lock are installed
 
       # 4. macOS Specific: Setup Code Signing (Optional)
       # Uncomment if you add Apple Developer credentials to GitHub Repository Secrets
