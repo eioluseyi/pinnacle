@@ -6,6 +6,16 @@ export const packagerConfig = {
   asar: true,
   icon: 'public/assets/icons/icon',
   extraResource: [path.resolve('server')],
+
+  // Uncomment if you have Apple Developer Account credentials
+  // Code Signing for macOS (Required for Gatekeeper on modern macOS)
+  // osxSign: {
+  //   identity: process.env.APPLE_SIGNING_IDENTITY || undefined, // e.g. "Developer ID Application: Your Name (TEAM_ID)"
+  //   'hardened-runtime': true,
+  //   entitlements: 'entitlements.plist',
+  //   'entitlements-inherit': 'entitlements.plist',
+  //   'signature-flags': 'library',
+  // },
 };
 export const rebuildConfig = {};
 export const makers = [
@@ -16,6 +26,16 @@ export const makers = [
       setupIcon: 'public/assets/icons/icon.ico',
     },
   },
+  // macOS: DMG (Preferred for direct distribution)
+  {
+    name: '@electron-forge/maker-dmg',
+    config: {
+      name: 'Pinnacle',
+      icon: 'public/assets/icons/icon.icns',
+      format: 'ULFO',
+    },
+  },
+  // macOS: ZIP (Required for auto-updates)
   {
     name: '@electron-forge/maker-zip',
     platforms: ['darwin'],
@@ -50,3 +70,15 @@ export const plugins = [
     [FuseV1Options.OnlyLoadAppFromAsar]: true,
   }),
 ];
+export const publishers = [
+  {
+    name: '@electron-forge/publisher-github',
+    config: {
+      repository: {
+        owner: 'eioluseyi',
+        name: 'pinnacle',
+      },
+      prerelease: false,
+    },
+  },
+],

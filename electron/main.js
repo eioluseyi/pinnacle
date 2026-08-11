@@ -5,6 +5,10 @@ import { startNextServer } from '../server/next-server.js';
 import { startSocketServer } from '../server/socket-server.js';
 import { getLocalIpAddress } from './utils.js';
 import { ipcMain } from 'electron/main';
+import { updateElectronApp } from 'update-electron-app';
+
+// Automatically checks GitHub Releases for updates every 10 minutes
+updateElectronApp();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
