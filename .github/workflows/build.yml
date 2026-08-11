@@ -24,8 +24,8 @@ jobs:
           - os: macos-latest
             platform: darwin
             arch: arm64
-          # macOS Intel
-          - os: macos-13
+          # macOS Universal/Intel build using a modern runner
+          - os: macos-14
             platform: darwin
             arch: x64
           # Windows x64

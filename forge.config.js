@@ -4,6 +4,7 @@ import path from 'node:path';
 
 export const packagerConfig = {
   asar: true,
+  executableName: 'pinnacle', // Force executable name to lowercase for Linux compatibility
   icon: 'public/assets/icons/icon',
   extraResource: [path.resolve('server')],
 
@@ -22,7 +23,6 @@ export const makers = [
   {
     name: '@electron-forge/maker-squirrel',
     config: {
-      iconUrl: 'public/assets/icons/icon.ico',
       setupIcon: 'public/assets/icons/icon.ico',
     },
   },
