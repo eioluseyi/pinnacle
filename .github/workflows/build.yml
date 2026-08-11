@@ -42,11 +42,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js (v20)
+      # 2. Setup Node.js (v22.22.2)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.22.2
           cache: 'yarn'
 
       # 3. Install dependencies with Yarn
