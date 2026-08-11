@@ -81,4 +81,4 @@ export const publishers = [
       prerelease: false,
     },
   },
-],
+];
