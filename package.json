@@ -15,6 +15,7 @@
     "package": "yarn next-build && electron-forge package",
     "make": "yarn next-build && electron-forge make",
     "publish": "electron-forge publish",
+    "bump": "yarn version --patch",
     "postversion": "git push && git push --tags",
     "lint": "eslint"
   },
