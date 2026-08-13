@@ -6,6 +6,10 @@
   "private": true,
   "main": "electron/main.js",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eioluseyi/pinnacle.git"
+  },
   "scripts": {
     "socket": "node server/socket-dev.js",
     "next-dev": "concurrently -k -n socket,next -c blue,green \"yarn socket\" \"wait-on tcp:localhost:1234 && next dev\"",
