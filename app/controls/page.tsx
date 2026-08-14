@@ -4,7 +4,7 @@ import { useIpAddress } from '@/hooks/useIpAddress';
 import { useSocket } from '@/hooks/useSocket';
 import classNames from 'classnames';
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export type ImageObject = {
   id: string;
@@ -18,6 +18,8 @@ export default function Home() {
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
   const { ipAddress, portNumber } = useIpAddress();
+  const [ipChanged, setIpChanged] = useState(false);
+  const isFirstIp = useRef(true);
 
   const handleDragStart = (image: ImageObject) => {
     setDraggedImage(image);
@@ -170,17 +172,58 @@ export default function Home() {
     localStorage.setItem('image-order', JSON.stringify(images.map((image) => image.id)));
   }, [images]);
 
+  useEffect(() => {
+    const RESET_DELAY = 3_000;
+    let windowTimer: ReturnType<typeof setTimeout> | undefined;
+    const createResetTimer = () => setTimeout(() => setIpChanged(false), RESET_DELAY);
+
+    if (ipAddress === '0.0.0.0' && portNumber === '3000') return;
+    if (isFirstIp.current) {
+      isFirstIp.current = false;
+      return;
+    }
+
+    setIpChanged(true);
+
+    if (typeof window !== 'undefined' && !window.document.hasFocus()) {
+      const handleFocus = () => {
+        windowTimer = createResetTimer();
+      };
+
+      window.addEventListener('focus', handleFocus);
+      return () => {
+        window.removeEventListener('focus', handleFocus);
+        if (windowTimer) clearTimeout(windowTimer);
+      };
+    }
+
+    const timer = createResetTimer();
+    return () => {
+      clearTimeout(timer);
+      if (windowTimer) clearTimeout(windowTimer);
+    };
+  }, [ipAddress, portNumber]);
+
   return (
-    <div className='flex-1 bg-zinc-50 font-sans dark:bg-black p-10'>
-      <h1 className='text-4xl font-bold text-center w-full mb-1'>Control Panel</h1>
-      <p className='text-center w-full font-bold mb-10'>
-        {ipAddress}:{portNumber}
+    <div className='flex-1 bg-zinc-50 dark:bg-black p-10 font-sans'>
+      <h1 className='mb-1 w-full font-bold text-4xl text-center'>Control Panel</h1>
+      <p className='relative mx-auto mb-10 w-fit font-bold text-center'>
+        <span>
+          {ipAddress}:{portNumber}
+        </span>
+        <span
+          className={classNames(
+            'absolute block inset-y-0 h-fit left-full ml-2 text-xs text-amber-200 transition-opacity duration-300 rounded-full bg-amber-700 px-2 my-auto',
+            { 'opacity-0': !ipChanged },
+          )}>
+          Updated
+        </span>
       </p>
-      <div className='flex max-w-6xl mx-auto gap-4'>
-        <main className='grid flex-1 gap-10 h-full'>
-          <h2 className='text-2xl font-bold'>Image control</h2>
+      <div className='flex gap-4 mx-auto max-w-6xl'>
+        <main className='flex-1 gap-10 grid h-full'>
+          <h2 className='font-bold text-2xl'>Image control</h2>
           <input
-            className='cursor-pointer outline outline-dashed outline-zinc-600 -outline-offset-2 rounded px-8 py-12'
+            className='px-8 py-12 rounded outline outline-dashed outline-zinc-600 -outline-offset-2 cursor-pointer'
             type='file'
             name='images'
             placeholder='Click to select or Drop Image(s) here...'
@@ -202,16 +245,16 @@ export default function Home() {
                 )}>
                 <input
                   id={image.name}
-                  className='pointer-events-none opacity-0 absolute'
+                  className='absolute opacity-0 pointer-events-none'
                   type='radio'
                   name='display'
                   value={image.name}
                   onChange={() => setDisplayValue(image.name)}
                 />
-                <img src={image.src} alt={image.name} className='object-cover w-auto h-16' />
+                <img src={image.src} alt={image.name} className='w-auto h-16 object-cover' />
                 <button
                   type='button'
-                  className='absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs hover:bg-red-600'
+                  className='top-1 right-1 absolute bg-black/70 hover:bg-red-600 rounded-full w-5 h-5 text-white text-xs'
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -224,24 +267,24 @@ export default function Home() {
             ))}
           </div>
         </main>
-        <aside className='grid gap-10 h-full w-80'>
-          <h2 className='text-2xl font-bold'>Display</h2>
-          <div className='grid gap-8'>
+        <aside className='gap-10 grid w-80 h-full'>
+          <h2 className='font-bold text-2xl'>Display</h2>
+          <div className='gap-8 grid'>
             {displayImage && (
               <>
                 <img
                   src={displayImage?.src || ''}
                   alt={displayImage?.name || ''}
-                  className='object-cover w-full h-auto rounded'
+                  className='rounded w-full h-auto object-cover'
                 />
-                <div className='flex gap-10 justify-between max-w-40 mx-auto'>
+                <div className='flex justify-between gap-10 mx-auto max-w-40'>
                   <button
-                    className='rounded-full bg-zinc-100 w-7 h-7 grid place-items-center cursor-pointer hover:bg-zinc-300 transition-colors duration-300 ease-out'
+                    className='place-items-center grid bg-zinc-100 hover:bg-zinc-300 rounded-full w-7 h-7 transition-colors duration-300 ease-out cursor-pointer'
                     onClick={previousImage}>
                     <ArrowLeftIcon className='text-background' />
                   </button>
                   <button
-                    className='rounded-full bg-zinc-100 w-7 h-7 grid place-items-center cursor-pointer hover:bg-zinc-300 transition-colors duration-300 ease-out'
+                    className='place-items-center grid bg-zinc-100 hover:bg-zinc-300 rounded-full w-7 h-7 transition-colors duration-300 ease-out cursor-pointer'
                     onClick={nextImage}>
                     <ArrowRightIcon className='text-background' />
                   </button>
