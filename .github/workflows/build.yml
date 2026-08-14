@@ -66,8 +66,9 @@ jobs:
 
       # 5. Build, Package, and Publish to GitHub Releases
       - name: Publish Electron App
-        run: npx electron-forge publish --arch=${{ matrix.arch }}
+        run: yarn publish --arch=${{ matrix.arch }}
         env:
+          NODE_ENV: production
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Apple credentials (used if code signing is enabled in forge.config)
           APPLE_ID: ${{ secrets.APPLE_ID }}

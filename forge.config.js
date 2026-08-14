@@ -42,6 +42,7 @@ export const makers = [
   },
   {
     name: '@electron-forge/maker-deb',
+    platforms: ['linux'],
     config: {
       options: {
         icon: 'public/assets/icons/icon.png',
@@ -50,6 +51,7 @@ export const makers = [
   },
   {
     name: '@electron-forge/maker-rpm',
+    platforms: ['linux'],
     config: { icon: 'public/assets/icons/icon.icns' },
   },
 ];
