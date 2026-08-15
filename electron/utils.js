@@ -13,3 +13,15 @@ export const getLocalIpAddress = () => {
 
   return null;
 };
+
+export const getErrorMessage = (error) => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
+};
+
+export const delay = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
