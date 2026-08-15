@@ -1,6 +1,9 @@
+import { useLogger } from '@/hooks/useLogger';
 import { useEffect } from 'react';
 
 export const useScreenAlwaysOn = () => {
+  const logger = useLogger('wake-lock');
+
   useEffect(() => {
     let wakeLock: WakeLockSentinel | null = null;
 
@@ -9,7 +12,7 @@ export const useScreenAlwaysOn = () => {
         wakeLock = await navigator.wakeLock.request('screen');
       } catch (err) {
         const error = err as { name?: string; message?: string };
-        console.error(`${error.name}, ${error.message}`); // Todo: Log — Logger
+        logger.error(`${error.name}, ${error.message}`);
       }
     }
 
@@ -31,5 +34,5 @@ export const useScreenAlwaysOn = () => {
     return () => {
       releaseWakeLock();
     };
-  }, []);
+  }, [logger]);
 };

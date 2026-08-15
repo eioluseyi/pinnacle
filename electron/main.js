@@ -7,6 +7,7 @@ import { getLocalIpAddress } from './utils.js';
 import { ipcMain } from 'electron/main';
 import { updateElectronApp } from 'update-electron-app';
 import squirrelStartup from 'electron-squirrel-startup';
+import { createLogger } from '../lib/logger-core.js';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (squirrelStartup) {
@@ -25,6 +26,9 @@ let socketServer;
 
 const NEXT_PORT = 3000;
 const SOCKET_PORT = 1234;
+const logger = createLogger('main', {
+  minLevel: process.env.LOG_LEVEL ?? (app.isPackaged ? 'info' : 'debug'),
+});
 
 ipcMain.handle('get-local-ip', () => {
   const ip = getLocalIpAddress();
@@ -39,6 +43,7 @@ setInterval(() => {
 
   if (nextIp !== currentIp) {
     currentIp = nextIp;
+    logger.info('Local IP address changed', { ip: nextIp });
 
     BrowserWindow.getAllWindows().forEach((win) => {
       //Todo: Implement dynamic port handling
@@ -76,6 +81,8 @@ async function waitForServer(port) {
 }
 
 app.whenReady().then(async () => {
+  logger.info('Application ready');
+
   nextServer = await startNextServer({
     port: NEXT_PORT,
   });
@@ -85,6 +92,7 @@ app.whenReady().then(async () => {
   });
 
   await createWindow();
+  logger.info('Main window created');
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
