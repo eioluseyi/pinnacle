@@ -7,7 +7,10 @@ import { getLocalIpAddress } from './utils.js';
 import { ipcMain } from 'electron/main';
 import { updateElectronApp } from 'update-electron-app';
 import squirrelStartup from 'electron-squirrel-startup';
+import { initSentry } from './sentry.js';
 import { createLogger } from '../lib/logger-core.js';
+
+initSentry();
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (squirrelStartup) {

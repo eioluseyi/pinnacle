@@ -28,6 +28,8 @@
   "license": "MIT",
   "dependencies": {
     "@electron-forge/maker-dmg": "^7.11.2",
+    "@sentry/electron": "^7.16.0",
+    "@sentry/react": "10.67.0",
     "@types/express": "^5.0.6",
     "classnames": "^2.5.1",
     "electron-squirrel-startup": "^1.0.1",

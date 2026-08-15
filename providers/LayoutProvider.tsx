@@ -1,6 +1,7 @@
 'use client';
 
 import { useScreenAlwaysOn } from '@/hooks/useScreenAlwaysOn';
+import { useSentryClient } from '@/lib/sentry-client';
 import React, { createContext, useContext } from 'react';
 
 const useLayoutContextValue = () => undefined;
@@ -11,6 +12,8 @@ const LayoutContext = createContext<LayoutContextValue | undefined>(undefined);
 
 export const LayoutProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   useScreenAlwaysOn();
+  useSentryClient();
+
   const value = useLayoutContextValue();
   return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;
 };
