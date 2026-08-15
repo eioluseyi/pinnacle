@@ -6,6 +6,12 @@ import { startSocketServer } from '../server/socket-server.js';
 import { getLocalIpAddress } from './utils.js';
 import { ipcMain } from 'electron/main';
 import { updateElectronApp } from 'update-electron-app';
+import squirrelStartup from 'electron-squirrel-startup';
+
+// Handle creating/removing shortcuts on Windows when installing/uninstalling
+if (squirrelStartup) {
+  app.quit();
+}
 
 // Automatically checks GitHub Releases for updates every 10 minutes
 updateElectronApp();

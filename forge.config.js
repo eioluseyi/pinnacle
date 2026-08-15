@@ -23,18 +23,19 @@ export const makers = [
   {
     name: '@electron-forge/maker-squirrel',
     config: {
+      shortcutName: 'Pinnacle', // Exact name for Start Menu / Desktop shortcut
       setupIcon: 'public/assets/icons/icon.ico',
     },
   },
   // macOS: DMG (Preferred for direct distribution)
-  {
-    name: '@electron-forge/maker-dmg',
-    config: {
-      name: 'Pinnacle',
-      icon: 'public/assets/icons/icon.icns',
-      format: 'ULFO',
-    },
-  },
+  // {
+  //   name: '@electron-forge/maker-dmg',
+  //   config: {
+  //     name: 'Pinnacle',
+  //     icon: 'public/assets/icons/icon.icns',
+  //     format: 'ULFO',
+  //   },
+  // },
   // macOS: ZIP (Required for auto-updates)
   {
     name: '@electron-forge/maker-zip',
