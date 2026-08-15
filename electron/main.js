@@ -5,8 +5,6 @@ import { initIpcHandlers } from './ipcHandlers.js';
 
 initErrorListeners();
 
-throw 'Just because I want to test Sentry';
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (squirrelStartup) app.quit();
 
