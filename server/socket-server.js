@@ -16,9 +16,6 @@ export const startSocketServer = ({ port = 1234 } = {}) => {
     },
   });
 
-  // Serve static files if you still need this
-  // app.use(express.static('public'));
-
   let currentData;
 
   io.on('connection', (socket) => {
