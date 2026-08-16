@@ -5,7 +5,7 @@ name: Build and Publish Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   publish:
@@ -47,7 +47,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.22.2
-          cache: 'yarn'
+          cache: "yarn"
 
       # 3. Install dependencies with Yarn
       - name: Install Dependencies
@@ -64,7 +64,19 @@ jobs:
       #     p12-file-base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
       #     p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
-      # 5. Build, Package, and Publish to GitHub Releases
+      # 5. Create a GitHub Release (only for tag pushes)
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      # 6. Build, Package, and Publish to GitHub Releases
       - name: Publish Electron App
         run: yarn electron-publish --arch=${{ matrix.arch }}
         env:
