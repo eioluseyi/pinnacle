@@ -1,8 +1,9 @@
 import { app, BrowserWindow } from 'electron/main';
+import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createLogger } from '../lib/logger-core.js';
-import { getErrorMessage, getLocalIpAddress } from './utils.js';
+import { delay, getErrorMessage, getLocalIpAddress } from './utils.js';
 import { startNextServer } from '../server/next-server.js';
 import { startSocketServer } from '../server/socket-server.js';
 import { initSentry } from './sentry.js';
@@ -11,13 +12,47 @@ import { updateElectronApp } from 'update-electron-app';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const preload = path.join(__dirname, 'preload.js');
+
+export const DEFAULT_PORTS = {
+  next: 3000,
+  socket: 1234,
+};
+
+export const ports = {
+  ...DEFAULT_PORTS,
+};
+
+const portListeners = new Set();
+
+function notifyPortListeners() {
+  const snapshot = { ...ports };
+  portListeners.forEach((listener) => listener(snapshot));
+}
+
+export function onPortsChange(listener) {
+  portListeners.add(listener);
+
+  return () => {
+    portListeners.delete(listener);
+  };
+}
+
+export function setPorts(newPorts) {
+  ports.next = newPorts.next;
+  ports.socket = newPorts.socket;
+  notifyPortListeners();
+}
+
+export function createAppLogger() {
+  return createLogger('main', {
+    minLevel: process.env.LOG_LEVEL ?? (app.isPackaged ? 'info' : 'debug'),
+  });
+}
+
 const logger = createAppLogger();
 
 let nextServer;
 let socketServer;
-
-const NEXT_PORT = 3000;
-const SOCKET_PORT = 1234;
 
 export function logError(context, error, extra = {}) {
   const err = error instanceof Error ? error : new Error(String(error));
@@ -44,6 +79,40 @@ export function bindProcessGuards() {
   }
 }
 
+export function isPortAvailable(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+
+    server.once('error', () => resolve(false));
+    server.once('listening', () => {
+      server.close(() => resolve(true));
+    });
+
+    server.listen(port, '0.0.0.0');
+  });
+}
+
+export async function findAvailablePort(startPort, maxAttempts = 20) {
+  for (let offset = 0; offset < maxAttempts; offset += 1) {
+    const candidate = startPort + offset;
+    if (await isPortAvailable(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`No free port found starting from ${startPort}`);
+}
+
+export async function resolveAvailablePorts() {
+  const nextPort = await findAvailablePort(DEFAULT_PORTS.next);
+  const socketPort = await findAvailablePort(DEFAULT_PORTS.socket);
+
+  setPorts({ next: nextPort, socket: socketPort });
+  logger.info('Resolved app ports', ports);
+
+  return { ...ports };
+}
+
 export async function waitForServer(port, { maxAttempts = 30, retryDelayMs = 250 } = {}) {
   let attempt = 0;
 
@@ -58,7 +127,7 @@ export async function waitForServer(port, { maxAttempts = 30, retryDelayMs = 250
       return;
     } catch (error) {
       attempt += 1;
-      logError(`Waiting for server on port ${port}`, error, { attempt, maxAttempts });
+      logError('Waiting for server', error, { port, attempt, maxAttempts });
 
       if (attempt >= maxAttempts) {
         throw new Error(`Server on port ${port} did not become ready after ${maxAttempts} attempts`);
@@ -81,22 +150,33 @@ export function initErrorListeners() {
 
 export function initIpListener() {
   let currentIp = getLocalIpAddress();
+  let currentPorts = { ...ports };
+
   setInterval(() => {
     try {
       const nextIp = getLocalIpAddress();
+      const ipChanged = nextIp !== currentIp;
+      const portsChanged = currentPorts.next !== ports.next || currentPorts.socket !== ports.socket;
 
       if (nextIp !== currentIp) {
         currentIp = nextIp;
         logger.info('Local IP address changed', { ip: nextIp });
-
-        BrowserWindow.getAllWindows().forEach((win) => {
-          try {
-            win.webContents.send('network:ip-changed', nextIp, { socket: SOCKET_PORT, next: NEXT_PORT });
-          } catch (error) {
-            logError('Failed to notify renderer about IP change', error, { nextIp });
-          }
-        });
       }
+
+      if (portsChanged) {
+        currentPorts = { ...ports };
+        logger.info('Local ports changed', { ports });
+      }
+
+      if (!ipChanged && !portsChanged) return;
+
+      BrowserWindow.getAllWindows().forEach((win) => {
+        try {
+          win.webContents.send('network:ip-changed', nextIp, ports);
+        } catch (error) {
+          logError('Failed to notify renderer about IP change', error, { nextIp, ports });
+        }
+      });
     } catch (error) {
       logError('IP polling failed', error);
     }
@@ -105,7 +185,6 @@ export function initIpListener() {
 
 export function initUpdater() {
   try {
-    // Automatically checks GitHub Releases for updates every 10 minutes
     updateElectronApp();
   } catch (error) {
     logError('Auto-update setup failed', error);
@@ -156,17 +235,18 @@ export function shutdownServices() {
 
 export async function startApp() {
   try {
-    logger.info('Application ready');
+    const resolvedPorts = await resolveAvailablePorts();
+    logger.info('Application ready', resolvedPorts);
 
-    nextServer = await startNextServer({ port: NEXT_PORT });
-    socketServer = await startSocketServer({ port: SOCKET_PORT });
+    nextServer = await startNextServer({ port: ports.next });
+    socketServer = await startSocketServer({ port: ports.socket });
 
-    await createWindow({ nextPort: NEXT_PORT });
-    logger.info('Main window created');
+    await createWindow({ nextPort: ports.next });
+    logger.info('Main window created', { ports: { ...ports } });
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow({ nextPort: NEXT_PORT }).catch((error) => {
+        createWindow({ nextPort: ports.next }).catch((error) => {
           logError('Window activation failed', error);
         });
       }
@@ -175,10 +255,4 @@ export async function startApp() {
     logError('Application startup failed', error);
     throw error;
   }
-}
-
-export function createAppLogger() {
-  return createLogger('main', {
-    minLevel: process.env.LOG_LEVEL ?? (app.isPackaged ? 'info' : 'debug'),
-  });
 }
