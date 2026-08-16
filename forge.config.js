@@ -82,6 +82,7 @@ export const publishers = [
         name: 'pinnacle',
       },
       prerelease: false,
+      draft: false,
     },
   },
 ];
