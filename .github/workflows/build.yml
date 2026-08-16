@@ -55,6 +55,12 @@ jobs:
           git config --global http.sslVerify false
           yarn install --frozen-lockfile # Ensures exact versions from yarn.lock are installed
 
+      # 3.1 Create .env file from GitHub Secrets before building
+      - name: Create .env File
+        run: |
+          echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
+          echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" >> .env
+
       # 4. macOS Specific: Setup Code Signing (Optional)
       # Uncomment if you add Apple Developer credentials to GitHub Repository Secrets
       # - name: Apple Code Signing Setup
