@@ -55,7 +55,8 @@
     "@electron-forge/publisher-github": "^7.11.2",
     "@electron/fuses": "^1.0.0",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.2.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^9.2.1",
@@ -64,7 +65,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
-    "tsx": "^4.20.3",
+    "tsx": "^4.23.12",
     "typescript": "^5",
     "wait-on": "^8.0.4"
   }
