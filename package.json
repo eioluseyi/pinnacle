@@ -2,7 +2,7 @@
   "name": "pinnacle",
   "productName": "Pinnacle",
   "description": "Web view addon for your projection software",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": true,
   "main": "electron/main.js",
   "type": "module",
