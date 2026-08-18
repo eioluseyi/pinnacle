@@ -4,7 +4,7 @@
   "description": "Web view addon for your projection software",
   "version": "0.1.13",
   "private": true,
-  "main": "dist-electron/main.js",
+  "main": "dist/electron/main.js",
   "type": "module",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "dev": "yarn build:electron && electron .",
     "build:electron": "node build-electron.mjs",
     "build": "yarn build:electron",
-    "start:prod": "cross-env NODE_ENV=production electron dist-electron/main.js",
+    "start:prod": "yarn build:electron && cross-env NODE_ENV=production electron .",
     "package": "yarn build:electron && dotenv -e ../../.env -- electron-forge package",
     "publish": "yarn build:electron && dotenv -e ../../.env -- electron-forge publish",
     "lint": "eslint ."

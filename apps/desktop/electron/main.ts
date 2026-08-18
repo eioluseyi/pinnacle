@@ -1,7 +1,7 @@
 import { app } from 'electron/main';
 import squirrelStartup from 'electron-squirrel-startup';
-import { initErrorListeners, initIpListener, initUpdater, logError, shutdownServices, startApp } from './helper.js';
-import { initIpcHandlers } from './ipcHandlers.js';
+import { initErrorListeners, initIpListener, initUpdater, logError, shutdownServices, startApp } from './helper';
+import { initIpcHandlers } from './ipcHandlers';
 
 initErrorListeners();
 

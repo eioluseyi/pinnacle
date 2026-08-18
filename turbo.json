@@ -3,9 +3,13 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "out/**", "dist/**", "dist-electron/**"]
+      "outputs": [".next/**", "out/**", "dist/**", "dist/electron/**"]
     },
     "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:prod": {
       "cache": false,
       "persistent": true
     },

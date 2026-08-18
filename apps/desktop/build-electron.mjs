@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const isDev = process.env.NODE_ENV !== 'production';
 const electronDir = path.resolve('electron');
-const outDir = path.resolve('dist-electron');
+const outDir = path.resolve('dist/electron');
 
 const commonConfig = {
   bundle: true,

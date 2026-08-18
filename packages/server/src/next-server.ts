@@ -17,7 +17,7 @@ export function startNextServer({ port = 3000 }) {
   const IP_ADDRESS = getLocalIpAddress() || 'localhost';
 
   if (!isDev) {
-    const staticDir = path.join(__dirname, '../next-out'); // Todo: Update path
+    const staticDir = path.join(__dirname, '../next');
     // Serve static assets
     app.use(express.static(staticDir));
   }

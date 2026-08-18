@@ -12,5 +12,5 @@
     "noEmit": true,
     "rootDir": "."
   },
-  "exclude": ["node_modules", "dist", "out", "next-out", "**/*.config.js", "**/*.config.mjs"]
+  "exclude": ["node_modules", "dist", "out", "dist/next", "**/*.config.js", "**/*.config.mjs"]
 }

@@ -8,15 +8,17 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
-    "dev:web-app": "turbo run dev --filter=web-app --filter=@pinnacle/server",
-    "dev:desktop": "turbo run dev --filter=desktop",
+    "dev:web-app": "turbo run dev --filter=@pinnacle/web-app --filter=@pinnacle/server",
+    "dev:desktop": "yarn build:web && turbo run start:prod --filter=@pinnacle/desktop",
+    "build:web": "turbo run build --filter=@pinnacle/web-app --filter=@pinnacle/server",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "clean": "rm -rf node_modules || rm -rf apps/desktop/dist-electron || rm -rf apps/desktop/node_modules || rm -rf apps/web-app/next-out || rm -rf apps/web-app/node_modules || rm -rf packages/server/node_modules"
+    "clean": "rm -rf node_modules || rm -rf apps/desktop/dist/electron || rm -rf apps/desktop/node_modules || rm -rf apps/web-app/dist/next || rm -rf apps/web-app/node_modules || rm -rf packages/server/node_modules || rm -rf apps/web-app/public/bucket"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "eslint": "^10.8.1",
     "eslint-config-next": "^16.3.1",
     "eslint-plugin-react": "^7.37.5",

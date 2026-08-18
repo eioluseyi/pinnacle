@@ -2,6 +2,7 @@ import { getLocalIpAddress } from '@pinnacle/utils';
 import type { NextConfig } from 'next';
 
 const isProd = process.env.NODE_ENV === 'production';
+const distDir = '../desktop/dist/next';
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: [getLocalIpAddress() || '0.0.0.0'],
@@ -18,7 +19,7 @@ const nextConfig: NextConfig = {
   // Only enable static export for production builds, leaving dev mode dynamic for rewrites & APIs
   ...(isProd ? { output: 'export' } : {}),
 
-  distDir: 'next-out',
+  distDir,
   trailingSlash: true,
 
   // Rewrites only run in dev mode (when output: 'export' is false)

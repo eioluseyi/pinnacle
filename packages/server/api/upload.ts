@@ -1,4 +1,4 @@
-// api/upload.js
+// api/upload.ts
 
 import express from 'express';
 import multer from 'multer';
