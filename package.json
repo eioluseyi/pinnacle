@@ -16,8 +16,13 @@
     "clean": "rm -rf node_modules || rm -rf apps/desktop/dist-electron || rm -rf apps/desktop/node_modules || rm -rf apps/web-app/next-out || rm -rf apps/web-app/node_modules || rm -rf packages/server/node_modules"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
+    "eslint": "^10.8.1",
+    "eslint-config-next": "^16.3.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "turbo": "^2.0.0",
-    "concurrently": "^9.2.1"
+    "typescript-eslint": "^8.67.0"
   },
   "license": "MIT"
 }

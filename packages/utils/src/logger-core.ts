@@ -1,3 +1,4 @@
+import { LogLevel } from './logger';
 import { reportError } from './sentry-report';
 
 const LEVEL_PRIORITY = {
@@ -7,15 +8,13 @@ const LEVEL_PRIORITY = {
   error: 3,
 };
 
-type Level = keyof typeof LEVEL_PRIORITY;
-
-function resolveMinLevel(options: { minLevel?: Level } = {}) {
+function resolveMinLevel(options: { minLevel?: LogLevel } = {}) {
   if (options.minLevel) {
     return options.minLevel;
   }
 
   if (process.env.LOG_LEVEL) {
-    return process.env.LOG_LEVEL as Level;
+    return process.env.LOG_LEVEL as LogLevel;
   }
 
   return process.env.NODE_ENV === 'production' ? 'info' : 'debug';
@@ -24,16 +23,16 @@ function resolveMinLevel(options: { minLevel?: Level } = {}) {
 export function createLogger(scope = 'app', options = {}) {
   const minLevel = resolveMinLevel(options);
 
-  function shouldLog(level: Level) {
+  function shouldLog(level: LogLevel) {
     return LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[minLevel];
   }
 
-  function formatPrefix(level: Level) {
+  function formatPrefix(level: LogLevel) {
     const timestamp = new Date().toISOString();
     return `[${timestamp}] [${level.toUpperCase()}] [${scope}]`;
   }
 
-  function writeLog(level: Level, message: string, args: unknown[] = []) {
+  function writeLog(level: LogLevel, message: string, args: unknown[] = []) {
     if (!shouldLog(level)) {
       return;
     }

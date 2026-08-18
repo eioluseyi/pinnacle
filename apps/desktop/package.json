@@ -17,7 +17,8 @@
     "build": "yarn build:electron",
     "start:prod": "cross-env NODE_ENV=production electron dist-electron/main.js",
     "package": "yarn build:electron && dotenv -e ../../.env -- electron-forge package",
-    "publish": "yarn build:electron && dotenv -e ../../.env -- electron-forge publish"
+    "publish": "yarn build:electron && dotenv -e ../../.env -- electron-forge publish",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@pinnacle/server": "*",
@@ -31,5 +32,6 @@
     "@electron-forge/publisher-github": "^7.11.2",
     "electron": "^43.1.0",
     "esbuild": "^0.20.0"
-  }
+  },
+  "license": "MIT"
 }
