@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -13,17 +13,23 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/next-out/
+# next.js & build outputs
+.next/
+*out/
+dist*/
+**/public/bucket/
 
-# production
-/build
-/out/
+# turborepo
+.turbo
+
+# electron builds / forge outputs
+/apps/desktop/out/
+/apps/desktop/.vite/
 
 # misc
 .DS_Store
 *.pem
+_*
 
 # debug
 npm-debug.log*
@@ -33,10 +39,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+# Note: Keep next-env.d.ts unignored if generated per package, or ignore locally if needed

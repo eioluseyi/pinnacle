@@ -61,6 +61,10 @@ jobs:
           echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
           echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" >> .env
 
+      # 3.2 Typecheck TypeScript
+      - name: Typecheck TypeScript
+        run: yarn typecheck
+
       # 4. macOS Specific: Setup Code Signing (Optional)
       # Uncomment if you add Apple Developer credentials to GitHub Repository Secrets
       # - name: Apple Code Signing Setup
