@@ -56,5 +56,6 @@
   "resolutions": {
     "@sentry/core": "10.67.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "version": "0.0.1"
 }
