@@ -22,6 +22,10 @@
       "cache": false,
       "persistent": false
     },
+    "bump": {
+      "cache": false,
+      "persistent": false
+    },
     "typecheck": {
       "cache": false,
       "dependsOn": ["^typecheck"]
