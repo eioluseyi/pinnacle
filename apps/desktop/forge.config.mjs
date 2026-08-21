@@ -62,15 +62,18 @@ export const makers = [
       },
     },
   },
-  // {
-  //   name: '@electron-forge/maker-rpm',
-  //   platforms: ['linux'],
-  //   config: {
-  //     name: 'pinnacle',
-  //     icon: `${iconPath}.icns`,
-  //     executableName: 'Pinnacle',
-  //   },
-  // },
+  {
+    name: '@electron-forge/maker-rpm',
+    platforms: ['linux'],
+    config: {
+      options: {
+        name: 'pinnacle',
+        bin: 'Pinnacle',
+        productName: 'Pinnacle',
+        icon: `${iconPath}.png`,
+      },
+    },
+  },
 ];
 export const plugins = [
   {
@@ -98,7 +101,7 @@ export const publishers = [
         name: 'pinnacle',
       },
       prerelease: false,
-      draft: !false,
+      draft: false,
     },
   },
 ];
