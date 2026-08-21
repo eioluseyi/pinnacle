@@ -8,9 +8,11 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
-  "dependencies": {
+  "peerDependencies": {
     "@sentry/core": "10.67.0",
-    "@sentry/electron": "^7.16.0",
+    "@sentry/electron": "^7.16.0"
+  },
+  "dependencies": {
     "@sentry/react": "10.67.0"
   },
   "license": "MIT"
