@@ -32,7 +32,7 @@
     "build:desktop": "turbo run build --filter=@pinnacle/desktop --force",
     "build": "yarn build:web-app && yarn build:server && yarn build:desktop",
     "make": "yarn build && turbo run make --force",
-    "electron-publish": "yarn build && turbo run publish --force",
+    "electron-publish": "yarn build && turbo run publish --force --",
     "bump": "turbo run bump --force",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
