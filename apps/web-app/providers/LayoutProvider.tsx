@@ -1,5 +1,6 @@
 'use client';
 
+import { ThemeProvider } from '@/components/theme-provider';
 import { useScreenAlwaysOn } from '@/hooks/useScreenAlwaysOn';
 import { useSentryClient } from '@/hooks/useSentryClient';
 import React, { createContext, useContext } from 'react';
@@ -15,7 +16,13 @@ export const LayoutProvider: React.FC<React.PropsWithChildren> = ({ children }) 
   useSentryClient();
 
   const value = useLayoutContextValue();
-  return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;
+  return (
+    <LayoutContext.Provider value={value}>
+      <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+        {children}
+      </ThemeProvider>
+    </LayoutContext.Provider>
+  );
 };
 
 export const useLayout = (): LayoutContextValue => {
