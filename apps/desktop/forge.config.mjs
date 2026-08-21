@@ -50,24 +50,27 @@ export const makers = [
     name: '@electron-forge/maker-zip',
     platforms: ['darwin'],
   },
-  // {
-  //   name: '@electron-forge/maker-deb',
-  //   platforms: ['linux'],
-  //   config: {
-  //     options: {
-  //       name: 'pinnacle',
-  //       icon: `${iconPath}.png`,
-  //     },
-  //   },
-  // },
   {
-    name: '@electron-forge/maker-rpm',
+    name: '@electron-forge/maker-deb',
     platforms: ['linux'],
     config: {
-      name: 'pinnacle',
-      icon: `${iconPath}.icns`,
+      options: {
+        name: 'pinnacle',
+        bin: 'Pinnacle',
+        productName: 'Pinnacle',
+        icon: `${iconPath}.png`,
+      },
     },
   },
+  // {
+  //   name: '@electron-forge/maker-rpm',
+  //   platforms: ['linux'],
+  //   config: {
+  //     name: 'pinnacle',
+  //     icon: `${iconPath}.icns`,
+  //     executableName: 'Pinnacle',
+  //   },
+  // },
 ];
 export const plugins = [
   {
