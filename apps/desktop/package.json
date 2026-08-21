@@ -38,5 +38,31 @@
     "electron": "^43.1.0",
     "esbuild": "^0.20.0"
   },
-  "license": "MIT"
+  "author": "Emmanuel (EIO) Imolorhe | @eioluseyi <eioluseyi@gmail.com> (https://eioluseyi.com)",
+  "homepage": "https://pinnacle.eioluseyi.com",
+  "bugs": {
+    "url": "https://github.com/eioluseyi/pinnacle/issues",
+    "email": "eioluseyi@gmail.com"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/13160342/join"
+  },
+  "license": "MIT",
+  "keywords": [
+    "desktop-app",
+    "electron",
+    "nextjs",
+    "cross-platform",
+    "nodejs",
+    "websocket",
+    "monorepo",
+    "local-first",
+    "pinnacle",
+    "uk-software",
+    "british-tech",
+    "nigerian-software",
+    "nigerian-tech",
+    "desktop-utility"
+  ]
 }
