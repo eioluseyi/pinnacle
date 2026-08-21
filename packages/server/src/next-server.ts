@@ -10,13 +10,11 @@ export type NextServer = ReturnType<typeof startNextServer>;
 const __dirname = path.dirname(__filename);
 const app = electron.app || {};
 const isDev = !app.isPackaged;
-const devStaticDir = path.join(__dirname, '../next');
-const prodStaticDir = path.join(__dirname, '../next');
 
 export function startNextServer({ port = 3000 }) {
   const app = express();
   const IP_ADDRESS = getLocalIpAddress() || 'localhost';
-  const staticDir = isDev ? devStaticDir : prodStaticDir;
+  const staticDir = path.join(__dirname, '../next');
 
   if (!isDev) {
     // Serve static assets

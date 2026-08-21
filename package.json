@@ -32,7 +32,7 @@
     "build:desktop": "turbo run build --filter=@pinnacle/desktop --force",
     "build": "yarn build:web-app && yarn build:server && yarn build:desktop",
     "make": "yarn build && turbo run make --force",
-    "publish": "yarn build && turbo run publish --filter=@pinnacle/desktop",
+    "electron-publish": "yarn build && turbo run publish --force",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "clean": "rm -rf node_modules || rm -rf apps/desktop/dist/electron || rm -rf apps/desktop/node_modules || rm -rf apps/web-app/dist/next || rm -rf apps/web-app/node_modules || rm -rf packages/server/node_modules || rm -rf apps/web-app/public/bucket"
