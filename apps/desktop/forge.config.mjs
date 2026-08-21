@@ -31,6 +31,7 @@ export const makers = [
   {
     name: '@electron-forge/maker-squirrel',
     config: {
+      name: 'Pinnacle',
       shortcutName: 'Pinnacle', // Exact name for Start Menu / Desktop shortcut
       setupIcon: `${iconPath}.ico`,
     },
@@ -54,6 +55,7 @@ export const makers = [
     platforms: ['linux'],
     config: {
       options: {
+        name: 'pinnacle',
         icon: `${iconPath}.png`,
       },
     },
@@ -61,7 +63,10 @@ export const makers = [
   {
     name: '@electron-forge/maker-rpm',
     platforms: ['linux'],
-    config: { icon: `${iconPath}.icns` },
+    config: {
+      name: 'pinnacle',
+      icon: `${iconPath}.icns`,
+    },
   },
 ];
 export const plugins = [
