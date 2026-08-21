@@ -9,6 +9,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@sentry/core": "10.67.0",
     "@sentry/electron": "^7.16.0",
     "@sentry/react": "10.67.0"
   },

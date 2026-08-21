@@ -2,29 +2,57 @@
   "name": "pinnacle-monorepo",
   "private": true,
   "packageManager": "yarn@1.22.22",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/esbuild",
+      "**/esbuild/**",
+      "**/electron",
+      "**/electron/**",
+      "**/@electron/fuses",
+      "**/@electron/fuses/**",
+      "**/@electron-forge",
+      "**/@electron-forge/**",
+      "**/update-electron-app",
+      "**/update-electron-app/**",
+      "**/electron-squirrel-startup",
+      "**/electron-squirrel-startup/**",
+      "**/@types/electron-squirrel-startup",
+      "**/@types/electron-squirrel-startup/**"
+    ]
+  },
   "scripts": {
     "dev": "turbo run dev",
     "dev:web-app": "turbo run dev --filter=@pinnacle/web-app --filter=@pinnacle/server",
-    "dev:desktop": "yarn build:web && turbo run start:prod --filter=@pinnacle/desktop",
-    "build:web": "turbo run build --filter=@pinnacle/web-app --filter=@pinnacle/server",
-    "build": "turbo run build",
+    "build:web-app": "turbo run build --filter=@pinnacle/web-app --force",
+    "build:server": "turbo run build --filter=@pinnacle/server --force",
+    "build:desktop": "turbo run build --filter=@pinnacle/desktop --force",
+    "build": "yarn build:web-app && yarn build:server && yarn build:desktop",
+    "make": "yarn build && turbo run make --force",
+    "publish": "yarn build && turbo run publish --filter=@pinnacle/desktop",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "clean": "rm -rf node_modules || rm -rf apps/desktop/dist/electron || rm -rf apps/desktop/node_modules || rm -rf apps/web-app/dist/next || rm -rf apps/web-app/node_modules || rm -rf packages/server/node_modules || rm -rf apps/web-app/public/bucket"
   },
   "devDependencies": {
+    "@sentry/electron": "7.16.0",
+    "@types/node": "^26.2.0",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
+    "esbuild": "^0.28.2",
     "eslint": "^10.8.1",
     "eslint-config-next": "^16.3.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "turbo": "^2.0.0",
+    "typescript": "5.5.4",
     "typescript-eslint": "^8.67.0"
+  },
+  "resolutions": {
+    "@sentry/core": "10.67.0"
   },
   "license": "MIT"
 }

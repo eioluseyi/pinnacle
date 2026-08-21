@@ -1,11 +1,13 @@
 {
   "name": "@pinnacle/server",
   "version": "1.0.0",
-  "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "type": "commonjs",
+  "main": "index.ts",
+  "types": "index.ts",
   "scripts": {
     "dev": "tsx --env-file=../../.env src/dev-server.ts",
+    "build": "tsx esbuild.config.ts",
+    "build-o": "tsc --build --force ./",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },

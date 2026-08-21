@@ -5,7 +5,7 @@ import multer from 'multer';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { bucketDir } from '../src/helpers';
+import { bucketDir } from '../helpers';
 
 const router = express.Router();
 

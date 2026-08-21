@@ -1,7 +1,6 @@
 import { app, BrowserWindow, powerMonitor } from 'electron/main';
 import net from 'node:net';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { updateElectronApp } from 'update-electron-app';
 
 import { NextServer, SocketServer, startNextServer, startSocketServer } from '@pinnacle/server';
@@ -11,7 +10,6 @@ import { delay, getErrorMessage } from './utils';
 import { initSentry } from './sentry';
 import { Ports } from '@pinnacle/shared-types';
 
-const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const preload = path.join(__dirname, 'preload.js');
 
@@ -258,9 +256,11 @@ export function shutdownServices() {
   }
 }
 
+export const getIsDev = () => !app.isPackaged;
+
 export async function startApp() {
   try {
-    const isDev = process.env.NODE_ENV !== 'production';
+    const isDev = getIsDev();
 
     if (!isDev) {
       nextServer = startNextServer({ port: ports.next });

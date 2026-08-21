@@ -1,12 +1,18 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import path from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const iconPath = path.join(__dirname, 'dist/next/assets/icons/icon');
 
 export const packagerConfig = {
   asar: true,
-  executableName: 'pinnacle', // Force executable name to lowercase for Linux compatibility
-  icon: 'public/assets/icons/icon',
-  extraResource: [path.resolve('server')],
+  executableName: 'Pinnacle',
+  icon: iconPath,
+  extraResource: ['dist'],
 
   // Uncomment if you have Apple Developer Account credentials
   // Code Signing for macOS (Required for Gatekeeper on modern macOS)
@@ -24,7 +30,7 @@ export const makers = [
     name: '@electron-forge/maker-squirrel',
     config: {
       shortcutName: 'Pinnacle', // Exact name for Start Menu / Desktop shortcut
-      setupIcon: 'public/assets/icons/icon.ico',
+      setupIcon: `${iconPath}.ico`,
     },
   },
   // macOS: DMG (Preferred for direct distribution)
@@ -32,7 +38,7 @@ export const makers = [
   //   name: '@electron-forge/maker-dmg',
   //   config: {
   //     name: 'Pinnacle',
-  //     icon: 'public/assets/icons/icon.icns',
+  //     icon: path.join(__dirname, 'dist/next/assets/icons/icon.icns'),
   //     format: 'ULFO',
   //   },
   // },
@@ -46,14 +52,14 @@ export const makers = [
     platforms: ['linux'],
     config: {
       options: {
-        icon: 'public/assets/icons/icon.png',
+        icon: `${iconPath}.png`,
       },
     },
   },
   {
     name: '@electron-forge/maker-rpm',
     platforms: ['linux'],
-    config: { icon: 'public/assets/icons/icon.icns' },
+    config: { icon: `${iconPath}.icns` },
   },
 ];
 export const plugins = [

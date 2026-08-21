@@ -3,11 +3,10 @@ import squirrelStartup from 'electron-squirrel-startup';
 import { initErrorListeners, initIpListener, initUpdater, logError, shutdownServices, startApp } from './helper';
 import { initIpcHandlers } from './ipcHandlers';
 
-initErrorListeners();
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (squirrelStartup) app.quit();
 
+initErrorListeners();
 initUpdater();
 initIpcHandlers();
 initIpListener();

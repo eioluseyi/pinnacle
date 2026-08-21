@@ -23,14 +23,18 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
 
   // Rewrites only run in dev mode (when output: 'export' is false)
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:4000/api/:path*',
-      },
-    ];
-  },
+  ...(isProd
+    ? {}
+    : {
+        async rewrites() {
+          return [
+            {
+              source: '/api/:path*',
+              destination: 'http://localhost:4000/api/:path*',
+            },
+          ];
+        },
+      }),
 };
 
 export default nextConfig;

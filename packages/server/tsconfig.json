@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "lib": ["esnext"],
-    "noEmit": true
+    "outDir": "../../apps/desktop/dist",
+    "allowJs": true,
+    "noEmit": false,
+    "incremental": true,
+    "esModuleInterop": true
   },
-  "include": ["**/*.ts", "../shared-types/**/*.ts"]
+  "include": ["src/**/*.ts", "index.ts"],
+  "exclude": ["node_modules", "**/dist"]
 }
