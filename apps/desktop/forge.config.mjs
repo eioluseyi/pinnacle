@@ -50,16 +50,16 @@ export const makers = [
     name: '@electron-forge/maker-zip',
     platforms: ['darwin'],
   },
-  {
-    name: '@electron-forge/maker-deb',
-    platforms: ['linux'],
-    config: {
-      options: {
-        name: 'pinnacle',
-        icon: `${iconPath}.png`,
-      },
-    },
-  },
+  // {
+  //   name: '@electron-forge/maker-deb',
+  //   platforms: ['linux'],
+  //   config: {
+  //     options: {
+  //       name: 'pinnacle',
+  //       icon: `${iconPath}.png`,
+  //     },
+  //   },
+  // },
   {
     name: '@electron-forge/maker-rpm',
     platforms: ['linux'],
@@ -95,7 +95,7 @@ export const publishers = [
         name: 'pinnacle',
       },
       prerelease: false,
-      draft: false,
+      draft: !false,
     },
   },
 ];
