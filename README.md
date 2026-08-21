@@ -1,129 +1,187 @@
 # Pinnacle
 
-Pinnacle is a local projection control app built as an Electron shell around a Next.js frontend and a Socket.IO-driven display system. The app lets a control panel upload/manage image assets and push the active image to a display client running on the same local network.
+Pinnacle is a local projection control app built as a monorepo with an Electron desktop shell, a Next.js web app, a shared server package, and shared utilities. It is designed to run on a local network where one device acts as the control interface and another device renders the active image.
 
 ## Current status
 
-This project is in active local-development / prototype stage. The core flow is working:
+This repository is organized as a multi-package workspace and is actively used for local development and packaging.
 
-- Electron boots the app shell
-- a local Next.js server is started for the UI
-- a Socket.IO server relays display updates between control and display clients
-- image uploads are stored and served locally
-- IP addresses and ports are discovered dynamically and broadcast to the renderer when they change
-- Sentry error tracking is wired for browser and Electron runtime failures
+The main flow is:
 
-## What it does
+- Electron launches the desktop shell
+- the web app renders the control and display UI
+- the server package runs Socket.IO and local API endpoints
+- uploaded assets are stored locally and served over the app runtime
+- local IP and port discovery are handled dynamically
+- Sentry captures browser and Electron runtime exceptions
+
+## What the app does
 
 ### Control panel
 
-The UI allows a user to:
+The main UI allows a user to:
 
-- upload multiple images
-- reorder images
-- select a display image
-- move through images with previous/next controls
-- trigger updates to the connected display
+- upload one or more images
+- reorder and manage assets
+- select the active display image
+- navigate between images
+- push updates to a connected display client
 
 ### Display view
 
-The display-side page subscribes to the Socket.IO stream and renders the latest image pushed from the controller.
+The display-side view subscribes to the Socket.IO stream and renders the latest image from the controller.
 
 ### Network behavior
 
-The app is designed to operate on a LAN, using the local machine IP plus dynamic ports for the Next.js web app and Socket.IO server. If the default ports are already occupied, the app resolves a fallback port and updates listeners.
+The app is designed for a LAN environment. It discovers the local machine IP and resolves active ports at runtime, then broadcasts changes to the renderer when the network state changes.
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    A[Electron main process] --> B[Startup bootstrap]
-    B --> C[resolveAvailablePorts]
-    C --> D{Default ports available?}
-    D -- No --> E[Find next free port for next + socket]
-    E --> F[Update shared ports object]
-    D -- Yes --> F
+    A[Electron main process] --> B[Desktop bootstrap]
+    B --> C[Resolve local IP + ports]
+    C --> D[Start server package]
+    D --> E[Start Next.js app]
+    E --> F[Open BrowserWindow]
 
-    F --> G[startNextServer on ports.next]
-    F --> H[startSocketServer on ports.socket]
-    G --> I[Create BrowserWindow]
-    H --> I
-    I --> J[Open splash-screen / Next app]
-
-    subgraph NextJS[Next.js app runtime]
-        J --> J1[app/layout.tsx]
-        J1 --> J2[LayoutProvider]
-        J2 --> J3[useScreenAlwaysOn]
-        J2 --> J4[initSentryClient]
-        J2 --> J5[Routes: splash-screen, controls, display]
-        J5 --> J6[useIpAddress / useSocket hooks]
-        J6 --> J7[IPC calls to Electron]
-        J5 --> J8[fetch /api/upload]
+    subgraph WebApp[apps/web-app]
+        F --> F1[App routes and screens]
+        F1 --> F2[hooks/useSocket]
+        F1 --> F3[hooks/useIpAddress]
+        F1 --> F4[providers/LayoutProvider]
+        F1 --> F5[Uploads and UI actions]
     end
 
-    J7 --> K[get-local-ip]
-    K --> L[Return local IP + active ports]
-    L --> J6
+    subgraph Server[packages/server]
+        D --> S1[Socket.IO server]
+        D --> S2[local upload API]
+        D --> S3[Next.js runtime bootstrap]
+    end
 
-    J6 --> M[Socket.IO client connects to active socket port]
-    J8 --> N[Upload API persists images locally]
+    F2 --> T[Socket events]
+    S1 --> T
+    T --> U[Display update stream]
+    F5 --> V[Local file handling]
 
-    M --> O[Display update stream]
-    O --> P[Render active image on display page]
-
-    Q[Socket server] --> O
-    Q --> R[Broadcast update-display events]
-
-    S[Error guards] --> T[uncaughtException / unhandledRejection]
-    S --> U[Sentry capture]
-    V[IP polling loop] --> W[Broadcast network:ip-changed when IP or ports change]
+    W[Error capture] --> X[Sentry]
+    Y[IPC + runtime events] --> W
 ```
 
 ## Project structure
 
 ```text
 .
-├── app/
-│   ├── controls/
-│   ├── splash-screen/
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
-├── electron/
-│   ├── helper.js
-│   ├── ipcHandlers.js
-│   ├── main.js
-│   ├── preload.js
-│   ├── sentry.js
-│   ├── utils.js
-│   └── main.js
-├── hooks/
-│   ├── useIpAddress.ts
-│   ├── useLogger.ts
-│   ├── useScreenAlwaysOn.tsx
-│   └── useSocket.tsx
-├── lib/
-│   ├── logger-core.js
-│   ├── logger.ts
-│   ├── sentry-client.ts
-│   ├── sentry-config.js
-│   └── sentry-report.js
-├── providers/
-│   └── LayoutProvider.tsx
-├── server/
-│   ├── api/
-│   ├── next-server.js
-│   ├── socket-dev.js
-│   └── socket-server.js
-├── public/
+├── .github/
+│   └── workflows/
+│       └── build.yml
+├── apps/
+│   ├── desktop/
+│   │   ├── dist/
+│   │   ├── electron/
+│   │   ├── build-electron.mjs
+│   │   ├── entitlements.plist
+│   │   ├── forge.config.mjs
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── web-app/
+│       ├── app/
+│       ├── hooks/
+│       ├── providers/
+│       ├── public/
+│       ├── AGENTS.md
+│       ├── CLAUDE.md
+│       ├── next.config.ts
+│       ├── next-env.d.ts
+│       ├── package.json
+│       ├── postcss.config.mjs
+│       └── tsconfig.json
+├── packages/
+│   ├── server/
+│   │   ├── src/
+│   │   ├── esbuild.config.ts
+│   │   ├── index.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── shared-types/
+│   │   ├── electron.d.ts
+│   │   ├── index.js
+│   │   ├── index.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── utils/
+│       ├── src/
+│       ├── package.json
+│       └── tsconfig.json
 ├── README.md
-├── package.json
-├── next.config.ts
-├── tsconfig.json
 ├── eslint.config.mjs
-├── forge.config.js
-└── entitlements.plist
+├── package.json
+├── tsconfig.json
+├── turbo.json
+└── yarn.lock
 ```
+
+## Monorepo scripts
+
+From the root workspace:
+
+```bash
+yarn install
+
+yarn dev
+yarn build
+yarn make
+yarn electron-publish
+yarn typecheck
+yarn lint
+```
+
+### Script behavior
+
+- `yarn dev` runs the project development flow through Turbo
+- `yarn build:web-app` builds the web app
+- `yarn build:server` builds the server package
+- `yarn build:desktop` builds the desktop app
+- `yarn build` runs the full app build sequence
+- `yarn make` builds and packages the desktop app with Electron Forge
+- `yarn electron-publish` builds and publishes the app with Forge
+
+## Desktop app details
+
+The desktop package is located in [apps/desktop](apps/desktop) and is configured with Electron Forge. Its entry points are in [apps/desktop/electron](apps/desktop/electron), and it uses the build script in [apps/desktop/build-electron.mjs](apps/desktop/build-electron.mjs).
+
+Key desktop files:
+
+- [apps/desktop/electron/main.ts](apps/desktop/electron/main.ts)
+- [apps/desktop/electron/helper.ts](apps/desktop/electron/helper.ts)
+- [apps/desktop/electron/ipcHandlers.ts](apps/desktop/electron/ipcHandlers.ts)
+- [apps/desktop/forge.config.mjs](apps/desktop/forge.config.mjs)
+
+## Web app details
+
+The frontend is in [apps/web-app](apps/web-app) and is built with Next.js.
+
+Important areas:
+
+- [apps/web-app/app](apps/web-app/app)
+- [apps/web-app/hooks](apps/web-app/hooks)
+- [apps/web-app/providers](apps/web-app/providers)
+- [apps/web-app/public](apps/web-app/public)
+
+## Shared packages
+
+### Server package
+
+The server package in [packages/server](packages/server) contains the local runtime, upload endpoints, and Socket.IO server logic.
+
+### Utils package
+
+The utilities package in [packages/utils](packages/utils) contains shared logging and Sentry helpers such as:
+
+- [packages/utils/src/logger.ts](packages/utils/src/logger.ts)
+- [packages/utils/src/logger-core.ts](packages/utils/src/logger-core.ts)
+- [packages/utils/src/sentry-config.ts](packages/utils/src/sentry-config.ts)
+- [packages/utils/src/sentry-report.ts](packages/utils/src/sentry-report.ts)
 
 ## Local development
 
@@ -131,88 +189,64 @@ flowchart TD
 
 - Node.js
 - Yarn
-- Electron runtime support for the host OS
+- macOS, Windows, or Linux host runtime supported by Electron
 
-### Install
+### Install dependencies
 
 ```bash
 yarn install
 ```
 
-### Run the app in development mode
+### Run the app locally
 
 ```bash
-yarn electron-dev
+yarn dev
 ```
 
-This starts the socket server, waits for the Next.js app to come up, then launches the Electron shell.
-
-### Run only the web app
+### Build all workspaces
 
 ```bash
-yarn next-dev
+yarn build
 ```
 
-### Build the app
+### Package the desktop app
 
 ```bash
-yarn next-build
-```
-
-### Package / distribute
-
-```bash
-yarn package
-# or
 yarn make
+```
+
+### Publish desktop release
+
+```bash
+yarn electron-publish
 ```
 
 ## Environment and runtime notes
 
 ### Ports
 
-The app resolves active ports dynamically at startup using a shared `ports` object.
-
-- default Next port: `3000`
-- default socket port: `1234`
-
-If either is in use, the app finds the next free port and updates all listeners, including the renderer UI and IPC calls.
+The app resolves ports dynamically at startup, with the server and frontend using fallback values when defaults are occupied.
 
 ### Local networking
 
-The app discovers the local IP address and exposes it through Electron IPC, so the UI can show the correct address in the browser window and connect to the local socket server.
+The app discovers the local IP address and uses it to keep the control and display surfaces connected on the same LAN.
 
 ### Logging and Sentry
 
-- structured app logging is handled via `lib/logger-core.js`
-- Sentry is initialized in Electron and browser contexts
-- uncaught errors and rejected promises are captured to help diagnose runtime failures
-
-## How the app flows in practice
-
-1. Electron boots the app shell.
-2. Available ports are resolved.
-3. Next.js and Socket.IO servers are started on the active port values.
-4. The browser loads the splash screen and app UI.
-5. The control panel uploads images and emits display updates.
-6. The display page receives Socket.IO events and updates the currently displayed image.
-7. Local IP / port changes are broadcast to the rendering layer automatically.
-
-## Known constraints / caveats
-
-- This is a local-network app, not a public web deployment.
-- Current functionality assumes the devices are on the same LAN.
-- Images are stored in the local app data bucket and are not yet fully cloud-backed.
-- The app is still evolving; UI polish and broader validation are ongoing.
+- shared logging helpers live in the utilities package
+- Sentry is initialized for the Electron shell and browser runtime
+- runtime exceptions and unhandled errors are captured for diagnostics
 
 ## Contribution notes
 
-This project is structured around a small Electron shell with a browser-based control surface and a lightweight realtime display layer. Most logic is intentionally split between:
+This project is intentionally split along clear boundaries:
 
-- Electron bootstrap and runtime guards
-- Next.js UI routes and hooks
-- Socket.IO communication for live display updates
-- local upload management and image processing
+- desktop shell and runtime startup
+- web UI and route logic
+- server package for local APIs and realtime transport
+- shared utilities and telemetry helpers
+
+This keeps the app easy to reason about while still allowing rapid iteration on the UI and local network flow.
 
 ## License
 
