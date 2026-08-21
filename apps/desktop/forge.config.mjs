@@ -10,6 +10,8 @@ const iconPath = path.join(__dirname, 'dist/next/assets/icons/icon');
 
 export const packagerConfig = {
   asar: true,
+  name: 'Pinnacle',
+  productName: 'Pinnacle',
   executableName: 'Pinnacle',
   icon: iconPath,
   extraResource: ['dist'],
@@ -88,7 +90,7 @@ export const publishers = [
         name: 'pinnacle',
       },
       prerelease: false,
-      draft: true,
+      draft: false,
     },
   },
 ];
