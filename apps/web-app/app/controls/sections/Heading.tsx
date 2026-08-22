@@ -33,10 +33,16 @@ export const Heading = () => {
         </p>
       </div>
       <div>
-        <Badge variant='outline' className='h-6'>
+        <Badge variant='outline' className='h-6 relative'>
           <DotIcon
             data-icon='inline-start'
-            className={cn('text-muted-foreground scale-300', { 'text-green-600': isScreenOnline })}
+            className={cn('text-amber-600 scale-300', { 'text-green-600': isScreenOnline })}
+          />
+          <DotIcon
+            data-icon='inline-start'
+            className={cn('absolute text-amber-600 scale-300 left-1.5', {
+              'text-green-600 animate-ping': isScreenOnline,
+            })}
           />
           {isScreenOnline ? onlineLabel : 'Waiting for connection'}
         </Badge>
