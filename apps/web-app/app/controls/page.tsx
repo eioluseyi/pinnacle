@@ -7,8 +7,9 @@ import { LivePreview } from '@/app/controls/sections/LivePreview';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Empty, EmptyTitle, EmptyMedia, EmptyHeader, EmptyDescription, EmptyContent } from '@/components/ui/empty';
+import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
 import { Separator } from '@/components/ui/separator';
-import { FolderDownIcon, PlusIcon } from 'lucide-react';
+import { FolderDownIcon, LoaderCircleIcon, PlusIcon } from 'lucide-react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
 const EmptyState = ({ action }: { action?: () => void }) => {
@@ -30,6 +31,19 @@ const EmptyState = ({ action }: { action?: () => void }) => {
   );
 };
 
+const LoadingState = () => {
+  return (
+    <div className='grid flex-1 place-items-center'>
+      <Marker role='status' className='w-fit -translate-y-20'>
+        <MarkerIcon>
+          <LoaderCircleIcon className='animate-spin' />
+        </MarkerIcon>
+        <MarkerContent className='shimmer'>Thinking...</MarkerContent>
+      </Marker>
+    </div>
+  );
+};
+
 export type ImageObject = {
   id: string;
   name: string;
@@ -37,6 +51,7 @@ export type ImageObject = {
 };
 export default function Dashboard() {
   const [images, setImages] = useState<ImageObject[]>([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
 
@@ -147,15 +162,23 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      const data = await loadImages();
-      setImages(data);
+      setIsLoadingImages(true);
+
+      try {
+        const data = await loadImages();
+        setImages(data);
+      } finally {
+        setIsLoadingImages(false);
+      }
     })();
   }, [loadImages]);
 
   return (
     <div className='@container flex flex-col mx-auto pr-6 pl-12 max-w-[1920px] h-svh font-sans overflow-hidden'>
       <Heading />
-      {images.length ? (
+      {isLoadingImages ? (
+        <LoadingState />
+      ) : images.length ? (
         <div className='flex flex-1 gap-8 overflow-hidden'>
           <main className='relative z-10 flex-1 h-full max-h-full overflow-y-auto overflow-x-hidden'>
             <GalleryManager
