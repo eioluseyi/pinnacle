@@ -225,7 +225,7 @@ async function createWindow({ nextPort }: { nextPort: number }) {
         nodeIntegration: false,
       },
       width: 1200,
-      height: 900,
+      height: 800,
       minWidth: 960,
       minHeight: 700,
     });
