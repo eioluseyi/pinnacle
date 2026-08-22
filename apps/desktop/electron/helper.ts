@@ -224,8 +224,10 @@ async function createWindow({ nextPort }: { nextPort: number }) {
         contextIsolation: true,
         nodeIntegration: false,
       },
-      width: 960,
-      height: 700,
+      width: 1200,
+      height: 900,
+      minWidth: 960,
+      minHeight: 700,
     });
 
     await waitForServer(nextPort);

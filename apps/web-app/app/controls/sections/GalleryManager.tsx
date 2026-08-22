@@ -84,7 +84,7 @@ export const GalleryManager = ({
   return (
     <div
       role='radiogroup'
-      className='grid @2xl:grid-cols-2 @5xl:grid-cols-3 @6xl:grid-cols-4 @7xl:grid-cols-5 gap-2 overflow-y-auto overflow-x-visible max-h-150 scroll-fade-y p-2'>
+      className='grid @md:grid-cols-2 @xl:grid-cols-3 @4xl:grid-cols-4 @5xl:grid-cols-5 gap-2 overflow-y-auto overflow-x-visible max-h-150 scroll-fade-y p-2'>
       {images.map((image) => (
         <label
           key={image.id}
@@ -95,7 +95,7 @@ export const GalleryManager = ({
           className={cn(
             'group relative cursor-pointer overflow-hidden rounded outline-1 outline-offset-2 outline-transparent focus-visible:outline-sky-900 transition-colors duration-300 ease-out',
             { 'outline-primary!': image.name === displayImage?.name },
-            'first:rounded-tl-4xl nth-[1]:rounded-tr-4xl @2xl:nth-[1]:rounded-tr @2xl:nth-[2]:rounded-tr-4xl @5xl:nth-[2]:rounded-tr @5xl:nth-[3]:rounded-tr-4xl @6xl:nth-[3]:rounded-tr @6xl:nth-[4]:rounded-tr-4xl @7xl:nth-[4]:rounded-tr @7xl:nth-[5]:rounded-tr-4xl',
+            'first:rounded-tl-4xl nth-[1]:rounded-tr-4xl @md:nth-[1]:rounded-tr @md:nth-[2]:rounded-tr-4xl @xl:nth-[2]:rounded-tr @xl:nth-[3]:rounded-tr-4xl @4xl:nth-[3]:rounded-tr @4xl:nth-[4]:rounded-tr-4xl @5xl:nth-[4]:rounded-tr @5xl:nth-[5]:rounded-tr-4xl',
           )}>
           <input
             id={image.name}

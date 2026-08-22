@@ -174,13 +174,13 @@ export default function Dashboard() {
   }, [loadImages]);
 
   return (
-    <div className='@container flex flex-col mx-auto pr-6 pl-12 max-w-[1920px] h-svh font-sans overflow-hidden'>
+    <div className='flex flex-col mx-auto pr-6 pl-12 max-w-[1920px] h-svh font-sans overflow-hidden'>
       <Heading />
       {isLoadingImages ? (
         <LoadingState />
       ) : images.length ? (
-        <div className='flex flex-1 gap-8 overflow-hidden'>
-          <main className='relative z-10 flex-1 h-full max-h-full overflow-y-auto overflow-x-hidden'>
+        <div className='flex flex-1 gap-5 overflow-hidden'>
+          <main className='@container relative z-10 flex-1 h-full max-h-full overflow-y-auto overflow-x-hidden'>
             <GalleryManager
               displayValue={displayValue}
               setDisplayValue={setDisplayValue}
@@ -201,7 +201,7 @@ export default function Dashboard() {
           </main>
           <aside className='relative flex-1 w-full max-w-sm h-fit pt-2'>
             <Separator
-              className='absolute h-full w-0.5! -left-4 bg-transparent bg-linear-to-b from-5% to-95% from-transparent via-border to-transparent'
+              className='absolute h-full w-0.5! -left-3.75 bg-transparent bg-linear-to-b from-5% to-95% from-transparent via-border to-transparent'
               orientation='vertical'
             />
             <LivePreview
