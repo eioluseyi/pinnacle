@@ -1,18 +1,44 @@
 import { Badge } from '@/components/ui/badge';
+import { useSocket } from '@/hooks/useSocket';
+import { cn } from '@/lib/utils';
 import { DotIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export const Heading = () => {
+  const { socket } = useSocket();
+  const [numberOfScreens, setNumberOfScreens] = useState(0);
+
+  const isScreenOnline = numberOfScreens > 0;
+  const isPlural = numberOfScreens !== 1;
+  const onlineLabel = (() => {
+    if (isPlural) return `Screens Online (${numberOfScreens})`;
+    return `Screen Online (${numberOfScreens})`;
+  })();
+
+  useEffect(() => {
+    const handleDisplayStatus = (count: number) => setNumberOfScreens(count);
+    socket?.on('display-status', handleDisplayStatus);
+
+    return () => {
+      socket?.off('display-status', handleDisplayStatus);
+    };
+  }, [socket]);
+
   return (
-    <div className='flex items-center gap-10 justify-between pt-8 pb-6'>
+    <div className='flex justify-between items-center gap-10 pt-8 pb-6'>
       <div>
-        <h1 className='font-serif text-4xl mb-1'>Slides Control Center</h1>
-        <p className='text-sm text-muted-foreground'>
+        <h1 className='mb-1 font-serif text-4xl'>Slides Control Center</h1>
+        <p className='text-muted-foreground text-sm'>
           Organize, preview, and stream slides to any connected screen in real-time.
         </p>
       </div>
       <div>
         <Badge variant='outline' className='h-6'>
-          <DotIcon data-icon='inline-start' className='scale-300 text-green-600' /> Screen Online
+          <DotIcon
+            data-icon='inline-start'
+            className={cn('text-muted-foreground scale-300', { 'text-green-600': isScreenOnline })}
+          />
+          {isScreenOnline ? onlineLabel : 'Waiting for connection'}
         </Badge>
       </div>
     </div>

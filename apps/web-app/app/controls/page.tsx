@@ -33,7 +33,7 @@ const EmptyState = ({ action }: { action?: () => void }) => {
 
 const LoadingState = () => {
   return (
-    <div className='grid flex-1 place-items-center'>
+    <div className='flex-1 place-items-center grid'>
       <Marker role='status' className='w-fit -translate-y-20'>
         <MarkerIcon>
           <LoaderCircleIcon className='animate-spin' />
@@ -174,13 +174,13 @@ export default function Dashboard() {
   }, [loadImages]);
 
   return (
-    <div className='flex flex-col mx-auto pr-6 pl-8 max-w-[1920px] h-svh font-sans overflow-hidden'>
+    <div className='flex flex-col mx-auto pr-6 pl-8 max-w-[1920px] h-svh overflow-hidden font-sans'>
       <Heading />
       {isLoadingImages ? (
         <LoadingState />
       ) : images.length ? (
         <div className='flex flex-1 gap-5 overflow-hidden'>
-          <main className='@container relative z-10 flex-1 h-full max-h-full overflow-y-auto overflow-x-hidden'>
+          <main className='@container z-10 relative flex-1 h-full max-h-full overflow-x-hidden overflow-y-auto'>
             <GalleryManager
               displayValue={displayValue}
               setDisplayValue={setDisplayValue}
@@ -188,9 +188,9 @@ export default function Dashboard() {
               setImages={setImages}
               displayImage={displayImage}
             />
-            <div className='sticky bottom-4 flex w-full justify-end pt-8 pointer-events-none'>
+            <div className='bottom-4 sticky flex justify-end pt-8 w-full pointer-events-none'>
               <Button
-                className='backdrop-blur-lg shadow-2xl shadow-black pointer-events-auto'
+                className='shadow-2xl shadow-black backdrop-blur-lg pointer-events-auto'
                 variant='ghost'
                 size='lg'
                 onClick={selectImageFile}>
@@ -199,9 +199,9 @@ export default function Dashboard() {
               </Button>
             </div>
           </main>
-          <aside className='relative flex-1 w-full max-w-sm h-fit pt-2'>
+          <aside className='relative flex-1 pt-2 w-full max-w-sm h-fit'>
             <Separator
-              className='absolute h-full w-0.5! -left-3.75 bg-transparent bg-linear-to-b from-5% to-95% from-transparent via-border to-transparent'
+              className='-left-3.75 absolute bg-transparent bg-linear-to-b from-5% from-transparent to-95% to-transparent via-border w-0.5! h-full'
               orientation='vertical'
             />
             <LivePreview

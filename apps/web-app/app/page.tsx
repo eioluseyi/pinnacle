@@ -2,31 +2,29 @@
 'use client';
 
 import { ImageObject } from '@/app/controls/page';
-import { useIpAddress } from '@/hooks/useIpAddress';
+import { useSocket } from '@/hooks/useSocket';
 import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
 
 export default function Display() {
+  const { socket, emit } = useSocket();
   const [displayData, setDisplayData] = useState<ImageObject>();
-  const { ipAddress } = useIpAddress();
 
   useEffect(() => {
-    const socket = io(`http://${ipAddress}:1234`);
-
-    socket.on('display-updated', (data) => {
-      console.log('Received:', data);
-      setDisplayData(data);
+    socket?.on('connect', () => {
+      emit?.('register-display');
     });
 
+    socket?.on('display-updated', setDisplayData);
+
     return () => {
-      socket.disconnect();
+      socket?.disconnect();
     };
-  }, [ipAddress]);
+  }, [socket]);
 
   return (
-    <div className='grid place-items-center flex-1'>
+    <div className='flex-1 place-items-center grid'>
       {displayData?.src && (
-        <img src={displayData?.src || ''} alt={displayData?.name || ''} className='w-full object-contain h-svh' />
+        <img src={displayData?.src || ''} alt={displayData?.name || ''} className='w-full h-svh object-contain' />
       )}
     </div>
   );

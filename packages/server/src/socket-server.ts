@@ -20,9 +20,19 @@ export const startSocketServer = ({ port = 1234 } = {}) => {
   });
 
   let currentData: DisplayData;
+  const displayClients = new Set<string>();
+
+  const broadcastDisplayStatus = () => {
+    io.emit('display-status', displayClients.size);
+  };
 
   io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+    socket.emit('display-status', displayClients.size);
+
+    socket.on('register-display', () => {
+      displayClients.add(socket.id);
+      broadcastDisplayStatus();
+    });
 
     if (currentData) {
       socket.emit('display-updated', currentData);
@@ -38,6 +48,10 @@ export const startSocketServer = ({ port = 1234 } = {}) => {
 
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
+
+      if (displayClients.delete(socket.id)) {
+        broadcastDisplayStatus();
+      }
     });
   });
 
