@@ -26,6 +26,14 @@
       "cache": false,
       "persistent": false
     },
+    "bump-minor": {
+      "cache": false,
+      "persistent": false
+    },
+    "bump-major": {
+      "cache": false,
+      "persistent": false
+    },
     "typecheck": {
       "cache": false,
       "dependsOn": ["^typecheck"]
