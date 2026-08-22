@@ -39,10 +39,7 @@ export const startSocketServer = ({ port = 1234 } = {}) => {
     }
 
     socket.on('update-display', (data: DisplayData) => {
-      console.log('Received data from control:', data);
-
       currentData = data;
-
       io.emit('display-updated', data);
     });
 
