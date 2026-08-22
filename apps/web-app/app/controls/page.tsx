@@ -174,7 +174,7 @@ export default function Dashboard() {
   }, [loadImages]);
 
   return (
-    <div className='flex flex-col mx-auto pr-6 pl-12 max-w-[1920px] h-svh font-sans overflow-hidden'>
+    <div className='flex flex-col mx-auto pr-6 pl-8 max-w-[1920px] h-svh font-sans overflow-hidden'>
       <Heading />
       {isLoadingImages ? (
         <LoadingState />

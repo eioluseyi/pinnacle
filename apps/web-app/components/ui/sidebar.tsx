@@ -241,8 +241,9 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       variant='ghost'
       size='icon-sm'
       className={cn(
-        'absolute border-muted bg-sidebar translate-y-5! translate-x-2! transition-all duration-300 ease-out',
+        'absolute border-muted bg-sidebar translate-y-9! translate-x-0! transition-all duration-300 ease-out',
         { '-translate-x-1/2!': open },
+        { 'border-l-transparent rounded-l-none': !open },
         className,
       )}
       onClick={(event) => {
