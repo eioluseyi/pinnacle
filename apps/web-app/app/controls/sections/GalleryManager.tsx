@@ -2,7 +2,7 @@ import { ImageObject } from '@/app/controls/page';
 import { useSocket } from '@/hooks/useSocket';
 import { cn } from '@/lib/utils';
 import { Trash2Icon } from 'lucide-react';
-import { ChangeEventHandler, Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEventHandler, Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type GalleryManagerProps = {
   images: ImageObject[];
@@ -20,9 +20,33 @@ export const GalleryManager = ({
 }: GalleryManagerProps) => {
   const socket = useSocket();
   const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
+  const dragPreviewRef = useRef<HTMLDivElement | null>(null);
 
-  const handleDragStart = (image: ImageObject) => {
+  const handleDragStart = (e: React.DragEvent<HTMLLabelElement>, image: ImageObject) => {
+    // Set data so the drop handler knows what is being dragged
+    e.dataTransfer.setData('text/plain', image.id);
+    e.dataTransfer.effectAllowed = 'move';
+
+    // Find the inner image element
+    const currentImgElement = e.currentTarget.querySelector('img');
+    const imgElement = document.createElement('img');
+    imgElement.src = currentImgElement?.src || '';
+    imgElement.classList.add('w-60', 'aspect-video', 'object-contain', 'checkered-bg', 'opacity-50');
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('w-fit', 'isolate');
+    wrapper.appendChild(imgElement);
+
+    document.body.appendChild(wrapper);
+    dragPreviewRef.current = wrapper;
+    e.dataTransfer.setDragImage(wrapper, imgElement.width / 2, imgElement.height / 2);
+
     setDraggedImage(image);
+  };
+
+  const handleDragEnd = () => {
+    dragPreviewRef.current?.remove();
+    dragPreviewRef.current = null;
+    setDraggedImage(null);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -84,16 +108,17 @@ export const GalleryManager = ({
   return (
     <div
       role='radiogroup'
-      className='grid @md:grid-cols-2 @xl:grid-cols-3 @4xl:grid-cols-4 @5xl:grid-cols-5 gap-2 overflow-y-auto overflow-x-visible max-h-150 scroll-fade-y p-2'>
+      className='gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2 max-h-150 overflow-x-visible overflow-y-auto scroll-fade-y'>
       {images.map((image) => (
         <label
           key={image.id}
           draggable
-          onDragStart={() => handleDragStart(image)}
+          onDragStart={(e) => handleDragStart(e, image)}
+          onDragEnd={handleDragEnd}
           onDragOver={handleDragOver}
           onDrop={() => handleDrop(image)}
           className={cn(
-            'group relative cursor-pointer overflow-hidden rounded outline-1 outline-offset-2 outline-transparent focus-visible:outline-sky-900 transition-colors duration-300 ease-out',
+            'group relative rounded outline-1 outline-transparent focus-visible:outline-sky-900 outline-offset-2 overflow-hidden transition-colors duration-300 ease-out cursor-pointer',
             { 'outline-primary!': image.name === displayImage?.name },
             'first:rounded-tl-4xl nth-[1]:rounded-tr-4xl @md:nth-[1]:rounded-tr @md:nth-[2]:rounded-tr-4xl @xl:nth-[2]:rounded-tr @xl:nth-[3]:rounded-tr-4xl @4xl:nth-[3]:rounded-tr @4xl:nth-[4]:rounded-tr-4xl @5xl:nth-[4]:rounded-tr @5xl:nth-[5]:rounded-tr-4xl',
           )}>
@@ -106,13 +131,13 @@ export const GalleryManager = ({
             checked={displayValue === image.name}
             onChange={() => setDisplayValue(image.name)}
           />
-          <img src={image.src} alt={image.name} className='w-auto aspect-video object-contain checkered-bg ' />
-          <div className='absolute bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out text-xs text-muted-foreground truncate px-1 bg-muted'>
+          <img src={image.src} alt={image.name} className='w-auto object-contain aspect-video checkered-bg' />
+          <div className='bottom-0 absolute bg-muted px-1 text-muted-foreground text-xs truncate transition-transform translate-y-full group-hover:translate-y-0 duration-300 ease-out'>
             <small>{image.name}</small>
           </div>
           <button
             type='button'
-            className='opacity-0 group-hover:opacity-100 transition-opacity top-1 right-1 absolute bg-background/70 hover:bg-primary grid place-items-center rounded-full w-5 h-5 text-foreground text-xs'
+            className='top-1 right-1 absolute place-items-center grid bg-background/70 hover:bg-primary opacity-0 group-hover:opacity-100 rounded-full w-5 h-5 text-foreground text-xs transition-opacity'
             onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
