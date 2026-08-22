@@ -25,7 +25,9 @@ export default function Display() {
 
   return (
     <div className='grid place-items-center flex-1'>
-      {displayData?.src && <img src={displayData?.src || ''} alt={displayData?.name || ''} className='w-full h-auto' />}
+      {displayData?.src && (
+        <img src={displayData?.src || ''} alt={displayData?.name || ''} className='w-full object-contain h-svh' />
+      )}
     </div>
   );
 }

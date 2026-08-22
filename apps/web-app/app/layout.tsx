@@ -1,17 +1,23 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono, Instrument_Sans, Instrument_Serif } from 'next/font/google';
 import './globals.css';
 import { LayoutProvider } from '@/providers/LayoutProvider';
 import { cn } from '@/lib/utils';
 
-const geistSans = Geist({
+const instrumentSans = Instrument_Sans({
   variable: '--font-sans',
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: '--font-serif',
+  subsets: ['latin', 'latin-ext'],
+  weight: ['400'],
 });
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+  variable: '--font-mono',
+  subsets: ['latin', 'latin-ext', 'cyrillic'],
 });
 
 export const metadata: Metadata = {
@@ -26,7 +32,9 @@ export default function RootLayout({
 }>) {
   return (
     <LayoutProvider>
-      <html lang='en' className={cn(geistSans.variable, geistMono.variable, 'h-full antialiased')}>
+      <html
+        lang='en'
+        className={cn(instrumentSans.variable, instrumentSerif.variable, geistMono.variable, 'h-full antialiased')}>
         <body className='min-h-full flex flex-col'>{children}</body>
       </html>
     </LayoutProvider>

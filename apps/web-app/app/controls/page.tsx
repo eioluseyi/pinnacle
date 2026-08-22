@@ -1,83 +1,68 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
-import { useIpAddress } from '@/hooks/useIpAddress';
-import { useSocket } from '@/hooks/useSocket';
-import classNames from 'classnames';
-import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react';
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { GalleryManager } from '@/app/controls/sections/GalleryManager';
+import { Heading } from '@/app/controls/sections/Heading';
+import { LivePreview } from '@/app/controls/sections/LivePreview';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Empty, EmptyTitle, EmptyMedia, EmptyHeader, EmptyDescription, EmptyContent } from '@/components/ui/empty';
+import { Separator } from '@/components/ui/separator';
+import { FolderDownIcon, PlusIcon } from 'lucide-react';
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
+
+const EmptyState = ({ action }: { action?: () => void }) => {
+  return (
+    <Card className='py-10'>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant='default'>
+            <FolderDownIcon className='size-12' />
+          </EmptyMedia>
+          <EmptyTitle>Get Started</EmptyTitle>
+          <EmptyDescription>Import images to begin streaming.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button onClick={action}>Import</Button>
+        </EmptyContent>
+      </Empty>
+    </Card>
+  );
+};
 
 export type ImageObject = {
   id: string;
   name: string;
   src: string;
 };
-export default function Home() {
-  const socket = useSocket();
+export default function Dashboard() {
   const [images, setImages] = useState<ImageObject[]>([]);
-  const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
-  const { ipAddress, portNumber } = useIpAddress();
-  const [ipChanged, setIpChanged] = useState(false);
-  const isFirstIp = useRef(true);
 
-  const handleDragStart = (image: ImageObject) => {
-    setDraggedImage(image);
+  const previousImage = () => {
+    if (!images.length) return;
+
+    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
+    const previousImageIndex = (() => {
+      if (currentImageIndex === 0) return images.length - 1;
+      return currentImageIndex - 1;
+    })();
+    setDisplayValue(images[previousImageIndex].name);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
+  const nextImage = () => {
+    if (!images.length) return;
+
+    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
+    const nextImageIndex = (() => {
+      if (currentImageIndex === images.length - 1) return 0;
+      return currentImageIndex + 1;
+    })();
+    setDisplayValue(images[nextImageIndex].name);
   };
 
-  const handleDrop = (targetImage: ImageObject) => {
-    if (!draggedImage || draggedImage.id === targetImage.id) {
-      return;
-    }
-
-    setImages((current) => {
-      const fromIndex = current.findIndex((image) => image.id === draggedImage.id);
-      const toIndex = current.findIndex((image) => image.id === targetImage.id);
-      const updated = [...current];
-      const [removed] = updated.splice(fromIndex, 1);
-
-      updated.splice(toIndex, 0, removed);
-      return updated;
-    });
-
-    setDraggedImage(null);
-  };
-
-  const loadImages = useCallback(async () => {
-    const response = await fetch('/api/upload');
-    const serverImages: ImageObject[] = await response.json();
-
-    const savedOrder = JSON.parse(localStorage.getItem('image-order') || '[]');
-
-    const ordered = savedOrder.length
-      ? savedOrder.map((id: string) => serverImages.find((image) => image.id === id)).filter(Boolean)
-      : serverImages;
-
-    return ordered as ImageObject[];
-  }, []);
-
-  const deleteImage = useCallback(
-    async (image: ImageObject) => {
-      await fetch('/api/upload', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(image),
-      });
-
-      setImages((current) => current.filter((img) => img.src !== image.src));
-
-      if (displayValue === image.name) {
-        setDisplayValue(null);
-      }
-    },
-    [displayValue],
-  );
+  const clearImage = () => setDisplayValue('');
 
   async function handleUpload(file: File) {
     if (!file) return '';
@@ -104,13 +89,6 @@ export default function Home() {
     }
   }
 
-  const sendUpdate = useCallback(
-    (payload?: ImageObject) => {
-      socket.emit('update-display', payload);
-    },
-    [socket],
-  );
-
   const handleImageSelection: ChangeEventHandler<HTMLInputElement, HTMLInputElement> = async (e) => {
     e.preventDefault();
 
@@ -135,31 +113,37 @@ export default function Home() {
     }
   };
 
-  const previousImage = () => {
-    if (!images.length) return;
-
-    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
-    const previousImageIndex = (() => {
-      if (currentImageIndex === 0) return images.length - 1;
-      return currentImageIndex - 1;
-    })();
-    setDisplayValue(images[previousImageIndex].name);
+  const selectImageFile = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.multiple = true;
+    fileInput.onchange = handleImageSelection as unknown as typeof fileInput.onchange;
+    fileInput.click();
   };
 
-  const nextImage = () => {
-    if (!images.length) return;
+  const loadImages = useCallback(async () => {
+    const response = await fetch('/api/upload');
+    const serverImages: ImageObject[] = await response.json();
 
-    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
-    const nextImageIndex = (() => {
-      if (currentImageIndex === images.length - 1) return 0;
-      return currentImageIndex + 1;
+    const savedOrder = JSON.parse(localStorage.getItem('image-order') || '[]');
+
+    const ordered = (() => {
+      if (!savedOrder.length) return serverImages;
+
+      const byId = new Map(serverImages.map((img) => [img.id, img]));
+
+      // Include images in the saved order if they still exist on the server
+      const orderedFromSaved = savedOrder.map((id: string) => byId.get(id)).filter(Boolean) as ImageObject[];
+
+      // Append any server images that weren't present in the saved order
+      const remaining = serverImages.filter((img) => !savedOrder.includes(img.id));
+
+      return [...orderedFromSaved, ...remaining];
     })();
-    setDisplayValue(images[nextImageIndex].name);
-  };
 
-  useEffect(() => {
-    sendUpdate(displayImage);
-  }, [displayImage, sendUpdate]);
+    return ordered as ImageObject[];
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -168,132 +152,46 @@ export default function Home() {
     })();
   }, [loadImages]);
 
-  useEffect(() => {
-    localStorage.setItem('image-order', JSON.stringify(images.map((image) => image.id)));
-  }, [images]);
-
-  useEffect(() => {
-    const RESET_DELAY = 3_000;
-    let windowTimer: ReturnType<typeof setTimeout> | undefined;
-    const createResetTimer = () => setTimeout(() => setIpChanged(false), RESET_DELAY);
-
-    if (ipAddress === '0.0.0.0' && portNumber === 3000) return;
-    if (isFirstIp.current) {
-      isFirstIp.current = false;
-      return;
-    }
-
-    setIpChanged(true);
-
-    if (typeof window !== 'undefined' && !window.document.hasFocus()) {
-      const handleFocus = () => {
-        windowTimer = createResetTimer();
-      };
-
-      window.addEventListener('focus', handleFocus);
-      return () => {
-        window.removeEventListener('focus', handleFocus);
-        if (windowTimer) clearTimeout(windowTimer);
-      };
-    }
-
-    const timer = createResetTimer();
-    return () => {
-      clearTimeout(timer);
-      if (windowTimer) clearTimeout(windowTimer);
-    };
-  }, [ipAddress, portNumber]);
-
   return (
-    <div className='flex-1 bg-zinc-50 dark:bg-black p-10 font-sans'>
-      <h1 className='mb-1 w-full font-bold text-4xl text-center'>Control Panel</h1>
-      <p className='relative mx-auto mb-10 w-fit font-bold text-center'>
-        <span>
-          {ipAddress}:{portNumber}
-        </span>
-        <span
-          className={classNames(
-            'absolute block inset-y-0 h-fit left-full ml-2 text-xs text-amber-200 transition-opacity duration-300 rounded-full bg-amber-700 px-2 my-auto',
-            { 'opacity-0': !ipChanged },
-          )}>
-          Updated
-        </span>
-      </p>
-      <div className='flex gap-4 mx-auto max-w-6xl'>
-        <main className='flex-1 gap-10 grid h-full'>
-          <h2 className='font-bold text-2xl'>Image control</h2>
-          <input
-            className='px-8 py-12 rounded outline outline-dashed outline-zinc-600 -outline-offset-2 cursor-pointer'
-            type='file'
-            name='images'
-            placeholder='Click to select or Drop Image(s) here...'
-            accept='image/*'
-            multiple
-            onChange={handleImageSelection}
-          />
-          <div role='radiogroup' className='flex flex-wrap gap-2 mt-20'>
-            {images.map((image) => (
-              <label
-                key={image.id}
-                draggable
-                onDragStart={() => handleDragStart(image)}
-                onDragOver={handleDragOver}
-                onDrop={() => handleDrop(image)}
-                className={classNames(
-                  'relative cursor-pointer overflow-hidden rounded outline-4 outline-transparent focus-visible:outline-sky-900 transition-colors duration-300 ease-out fo',
-                  image.name === displayImage?.name && 'outline-sky-600!',
-                )}>
-                <input
-                  id={image.name}
-                  className='absolute opacity-0 pointer-events-none'
-                  type='radio'
-                  name='display'
-                  value={image.name}
-                  onChange={() => setDisplayValue(image.name)}
-                />
-                <img src={image.src} alt={image.name} className='w-auto h-16 object-cover' />
-                <button
-                  type='button'
-                  className='top-1 right-1 absolute bg-black/70 hover:bg-red-600 rounded-full w-5 h-5 text-white text-xs'
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    await deleteImage(image);
-                  }}>
-                  ×
-                </button>
-              </label>
-            ))}
-          </div>
-        </main>
-        <aside className='gap-10 grid w-80 h-full'>
-          <h2 className='font-bold text-2xl'>Display</h2>
-          <div className='gap-8 grid'>
-            {displayImage && (
-              <>
-                <img
-                  src={displayImage?.src || ''}
-                  alt={displayImage?.name || ''}
-                  className='rounded w-full h-auto object-cover'
-                />
-                <div className='flex justify-between gap-10 mx-auto max-w-40'>
-                  <button
-                    className='place-items-center grid bg-zinc-100 hover:bg-zinc-300 rounded-full w-7 h-7 transition-colors duration-300 ease-out cursor-pointer'
-                    onClick={previousImage}>
-                    <ArrowLeftIcon className='text-background' />
-                  </button>
-                  <button
-                    className='place-items-center grid bg-zinc-100 hover:bg-zinc-300 rounded-full w-7 h-7 transition-colors duration-300 ease-out cursor-pointer'
-                    onClick={nextImage}>
-                    <ArrowRightIcon className='text-background' />
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </aside>
-      </div>
+    <div className='@container flex flex-col mx-auto pr-6 pl-12 max-w-[1920px] h-svh font-sans overflow-hidden'>
+      <Heading />
+      {images.length ? (
+        <div className='flex flex-1 gap-8 overflow-hidden'>
+          <main className='relative z-10 flex-1 h-full max-h-full overflow-y-auto overflow-x-hidden'>
+            <GalleryManager
+              displayValue={displayValue}
+              setDisplayValue={setDisplayValue}
+              images={images}
+              setImages={setImages}
+              displayImage={displayImage}
+            />
+            <div className='sticky bottom-4 flex w-full justify-end pt-8 pointer-events-none'>
+              <Button
+                className='backdrop-blur-lg shadow-2xl shadow-black pointer-events-auto'
+                variant='ghost'
+                size='lg'
+                onClick={selectImageFile}>
+                <PlusIcon />
+                Import
+              </Button>
+            </div>
+          </main>
+          <aside className='relative flex-1 w-full max-w-sm h-fit pt-2'>
+            <Separator
+              className='absolute h-full w-0.5! -left-4 bg-transparent bg-linear-to-b from-5% to-95% from-transparent via-border to-transparent'
+              orientation='vertical'
+            />
+            <LivePreview
+              displayImage={displayImage}
+              nextImage={nextImage}
+              previousImage={previousImage}
+              clearImage={clearImage}
+            />
+          </aside>
+        </div>
+      ) : (
+        <EmptyState action={selectImageFile} />
+      )}
     </div>
   );
 }

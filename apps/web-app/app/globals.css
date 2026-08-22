@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -126,5 +126,15 @@
   }
   html {
     @apply font-sans;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+@layer utilities {
+  .checkered-bg {
+    background: repeating-conic-gradient(var(--color-border) 0 25%, transparent 0 50%) 50% / 20px 20px;
   }
 }
