@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { FolderDownIcon, LoaderCircleIcon, PlusIcon, Trash2Icon } from 'lucide-react';
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
 const EmptyState = ({ action }: { action?: () => void }) => {
   return (
@@ -128,6 +128,32 @@ export default function Dashboard() {
 
   const importFiles = async (files: File[], target?: FileDropTarget) => {
     const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    const rejectedFiles = files.filter((file) => !file.type.startsWith('image/'));
+
+    if (rejectedFiles.length) {
+      const fileNames = rejectedFiles.map((file) => file.name);
+      toast.add({
+        title: 'Unsupported file',
+        description: (
+          <>
+            {fileNames.map((name, idx) => (
+              <React.Fragment key={name}>
+                <em key={name} className='inline-block max-w-[28ch] truncate'>
+                  {name}
+                </em>
+                {idx < fileNames.length - 1 && <span className='inline-block overflow-hidden'>,&nbsp;</span>}
+              </React.Fragment>
+            ))}
+            &nbsp;&nbsp;
+            <span className='inline-block overflow-hidden text-foreground'>
+              {`${rejectedFiles.length === 1 ? 'is' : 'are'} not ${rejectedFiles.length === 1 ? 'an image' : 'images'}`}
+            </span>
+          </>
+        ),
+        type: 'warning',
+      });
+    }
+
     if (!imageFiles.length) return;
 
     const uploadPromise = Promise.all(imageFiles.map((file) => handleUpload(file, false)));
