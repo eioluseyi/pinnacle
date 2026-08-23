@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Empty, EmptyTitle, EmptyMedia, EmptyHeader, EmptyDescription, EmptyContent } from '@/components/ui/empty';
 import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
 import { Separator } from '@/components/ui/separator';
-import { FolderDownIcon, LoaderCircleIcon, PlusIcon } from 'lucide-react';
+import { FolderDownIcon, LoaderCircleIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
 const EmptyState = ({ action }: { action?: () => void }) => {
@@ -54,6 +54,7 @@ export default function Dashboard() {
   const [images, setImages] = useState<ImageObject[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
+  const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
   const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
 
   const previousImage = () => {
@@ -79,6 +80,23 @@ export default function Dashboard() {
   };
 
   const clearImage = () => setDisplayValue('');
+
+  const deleteImage = async (image: ImageObject) => {
+    await fetch('/api/upload', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(image),
+    });
+
+    setImages((current) => current.filter((item) => item.id !== image.id));
+    if (displayValue === image.name) setDisplayValue(null);
+  };
+
+  const deleteSelectedImages = async () => {
+    const selectedImages = images.filter((image) => selectedImageIds.has(image.id));
+    await Promise.all(selectedImages.map(deleteImage));
+    setSelectedImageIds(new Set());
+  };
 
   const importFiles = async (files: File[], target?: FileDropTarget) => {
     const imageObjects = await Promise.all(
@@ -214,8 +232,22 @@ export default function Dashboard() {
               setImages={setImages}
               displayImage={displayImage}
               onFilesDrop={importFiles}
+              deleteImage={deleteImage}
+              selectedImageIds={selectedImageIds}
+              setSelectedImageIds={setSelectedImageIds}
             />
-            <div className='bottom-4 sticky flex justify-end pt-8 w-full pointer-events-none'>
+            <div className='bottom-4 sticky flex justify-end items-center gap-2 pt-8 w-full pointer-events-none'>
+              {selectedImageIds.size > 0 && (
+                <Button
+                  className='pointer-events-auto'
+                  type='button'
+                  variant='destructive'
+                  size='lg'
+                  onClick={deleteSelectedImages}>
+                  <Trash2Icon />
+                  Delete selected ({selectedImageIds.size})
+                </Button>
+              )}
               <Button
                 className='shadow-2xl shadow-black backdrop-blur-lg pointer-events-auto'
                 variant='ghost'

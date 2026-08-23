@@ -1,5 +1,4 @@
 import { ImageObject } from '@/app/controls/page';
-import { Button } from '@/components/ui/button';
 import { useSocket } from '@/hooks/useSocket';
 import { cn } from '@/lib/utils';
 import { Trash2Icon } from 'lucide-react';
@@ -12,6 +11,9 @@ type GalleryManagerProps = {
   setDisplayValue: Dispatch<SetStateAction<string | null>>;
   displayImage?: ImageObject;
   onFilesDrop: (files: File[], target?: FileDropTarget) => void;
+  deleteImage: (image: ImageObject) => Promise<void>;
+  selectedImageIds: Set<string>;
+  setSelectedImageIds: Dispatch<SetStateAction<Set<string>>>;
 };
 
 type DropPosition = 'left' | 'right';
@@ -24,11 +26,13 @@ export const GalleryManager = ({
   setDisplayValue,
   displayImage,
   onFilesDrop,
+  deleteImage,
+  selectedImageIds,
+  setSelectedImageIds,
 }: GalleryManagerProps) => {
   const socket = useSocket();
   const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: string; position: DropPosition } | null>(null);
-  const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
   const dragPreviewRef = useRef<HTMLDivElement | null>(null);
 
   const handleImageSelection = (e: React.MouseEvent<HTMLLabelElement>, image: ImageObject) => {
@@ -190,31 +194,6 @@ export const GalleryManager = ({
     setDraggedImage(null);
   };
 
-  const deleteImage = useCallback(
-    async (image: ImageObject) => {
-      await fetch('/api/upload', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(image),
-      });
-
-      setImages((current) => current.filter((img) => img.src !== image.src));
-
-      if (displayValue === image.name) {
-        setDisplayValue(null);
-      }
-    },
-    [displayValue],
-  );
-
-  const deleteSelectedImages = async () => {
-    const selectedImages = images.filter((image) => selectedImageIds.has(image.id));
-    await Promise.all(selectedImages.map((image) => deleteImage(image)));
-    setSelectedImageIds(new Set());
-  };
-
   const clearSelection = () => {
     setSelectedImageIds(new Set());
   };
@@ -233,74 +212,61 @@ export const GalleryManager = ({
   // first:rounded-tl-4xl nth-[1]:rounded-tr-4xl @md:nth-[1]:rounded-tr @md:nth-[2]:rounded-tr-4xl @xl:nth-[2]:rounded-tr @xl:nth-[3]:rounded-tr-4xl @4xl:nth-[3]:rounded-tr @4xl:nth-[4]:rounded-tr-4xl @5xl:nth-[4]:rounded-tr @5xl:nth-[5]:rounded-tr-4xl
 
   return (
-    <>
-      {selectedImageIds.size > 0 && (
-        <div className='flex justify-between items-center px-2 pb-2'>
-          <span className='text-muted-foreground text-sm'>
-            {selectedImageIds.size} {selectedImageIds.size === 1 ? 'slide' : 'slides'} selected
-          </span>
-          <Button type='button' variant='destructive' size='sm' onClick={deleteSelectedImages}>
-            <Trash2Icon />
-            Delete selected
-          </Button>
-        </div>
-      )}
-      <div
-        role='radiogroup'
-        className='gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2 max-h-150 overflow-x-visible overflow-y-auto scroll-fade-y'
-        onClick={clearSelection}
-        onDragOver={handleGridDragOver}
-        onDrop={handleDrop}>
-        {images.map((image) => (
-          <div key={image.id} className='relative' data-image-id={image.id}>
-            <label
-              draggable
-              onDragStart={(e) => handleDragStart(e, image)}
-              onDragEnd={handleDragEnd}
-              onMouseDown={(e) => handleImageMouseDown(e, image)}
-              onClick={(e) => handleImageClick(e, image)}
-              className={cn(
-                'group block relative rounded outline-1 outline-transparent focus-visible:outline-sky-900 outline-offset-2 overflow-hidden transition-colors duration-300 ease-out cursor-pointer',
-                { 'outline-primary!': image.name === displayImage?.name },
-                { 'outline-2! outline-primary!': selectedImageIds.has(image.id) },
-              )}>
-              <input
-                id={image.name}
-                className='absolute opacity-0 pointer-events-none'
-                type='radio'
-                name='display'
-                value={image.name}
-                checked={displayValue === image.name}
-                onChange={() => setDisplayValue(image.name)}
-              />
-              <img src={image.src} alt={image.name} className='w-auto object-contain aspect-video checkered-bg' />
-              <div className='bottom-0 absolute bg-muted px-1 text-muted-foreground text-xs truncate transition-transform translate-y-full group-hover:translate-y-0 duration-300 ease-out'>
-                <small>{image.name}</small>
-              </div>
-              <button
-                type='button'
-                className='top-1 right-1 absolute place-items-center grid bg-background/70 hover:bg-primary opacity-0 group-hover:opacity-100 rounded-full w-5 h-5 text-foreground text-xs transition-opacity'
-                onClick={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+    <div
+      role='radiogroup'
+      className='gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2 max-h-150 overflow-x-visible overflow-y-auto scroll-fade-y'
+      onClick={clearSelection}
+      onDragOver={handleGridDragOver}
+      onDrop={handleDrop}>
+      {images.map((image) => (
+        <div key={image.id} className='relative' data-image-id={image.id}>
+          <label
+            draggable
+            onDragStart={(e) => handleDragStart(e, image)}
+            onDragEnd={handleDragEnd}
+            onMouseDown={(e) => handleImageMouseDown(e, image)}
+            onClick={(e) => handleImageClick(e, image)}
+            className={cn(
+              'group block relative rounded outline-1 outline-transparent focus-visible:outline-sky-900 outline-offset-2 overflow-hidden transition-colors duration-300 ease-out cursor-pointer',
+              { 'outline-primary!': image.name === displayImage?.name },
+              { 'outline-2! outline-primary!': selectedImageIds.has(image.id) },
+            )}>
+            <input
+              id={image.name}
+              className='absolute opacity-0 pointer-events-none'
+              type='radio'
+              name='display'
+              value={image.name}
+              checked={displayValue === image.name}
+              onChange={() => setDisplayValue(image.name)}
+            />
+            <img src={image.src} alt={image.name} className='w-auto object-contain aspect-video checkered-bg' />
+            <div className='bottom-0 absolute bg-muted px-1 text-muted-foreground text-xs truncate transition-transform translate-y-full group-hover:translate-y-0 duration-300 ease-out'>
+              <small>{image.name}</small>
+            </div>
+            <button
+              type='button'
+              className='top-1 right-1 absolute place-items-center grid bg-background/70 hover:bg-primary opacity-0 group-hover:opacity-100 rounded-full w-5 h-5 text-foreground text-xs transition-opacity'
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
 
-                  await deleteImage(image);
-                }}>
-                <Trash2Icon size={12} />
-              </button>
-            </label>
-            {dropTarget?.id === image.id && (
-              <span
-                aria-hidden='true'
-                className={cn(
-                  'top-0 bottom-0 z-10 absolute bg-primary w-0.5 pointer-events-none',
-                  dropTarget.position === 'left' ? '-left-1.25' : '-right-1.25',
-                )}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-    </>
+                await deleteImage(image);
+              }}>
+              <Trash2Icon size={12} />
+            </button>
+          </label>
+          {dropTarget?.id === image.id && (
+            <span
+              aria-hidden='true'
+              className={cn(
+                'top-0 bottom-0 z-10 absolute bg-primary w-0.5 pointer-events-none',
+                dropTarget.position === 'left' ? '-left-1.25' : '-right-1.25',
+              )}
+            />
+          )}
+        </div>
+      ))}
+    </div>
   );
 };
