@@ -31,7 +31,7 @@ export const GalleryManager = ({
   setSelectedImageIds,
 }: GalleryManagerProps) => {
   const socket = useSocket();
-  const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
+  const [draggedImages, setDraggedImages] = useState<ImageObject[]>([]);
   const [dropTarget, setDropTarget] = useState<{ id: string; position: DropPosition } | null>(null);
   const [selectionBox, setSelectionBox] = useState<{ left: number; top: number; width: number; height: number } | null>(
     null,
@@ -112,8 +112,9 @@ export const GalleryManager = ({
     e.dataTransfer.effectAllowed = 'move';
 
     // Find the inner image element
+    const imagesToDrag = selectedImageIds.has(image.id) ? images.filter((item) => selectedImageIds.has(item.id)) : [image];
     const imgElement = document.createElement('img');
-    imgElement.src = image?.src || '';
+    imgElement.src = imagesToDrag[0]?.src || '';
     imgElement.classList.add('w-60', 'aspect-video', 'object-contain', 'checkered-bg', 'opacity-50');
     const wrapper = document.createElement('div');
     wrapper.classList.add('w-fit', 'isolate');
@@ -123,14 +124,14 @@ export const GalleryManager = ({
     dragPreviewRef.current = wrapper;
     e.dataTransfer.setDragImage(wrapper, imgElement.width / 2, imgElement.height / 2);
 
-    setDraggedImage(image);
+    setDraggedImages(imagesToDrag);
   };
 
   const handleDragEnd = () => {
     dragPreviewRef.current?.remove();
     dragPreviewRef.current = null;
     setDropTarget(null);
-    setDraggedImage(null);
+    setDraggedImages([]);
   };
 
   const setDropTargetFromPoint = (
@@ -182,25 +183,25 @@ export const GalleryManager = ({
     }
 
     const targetImage = dropTarget && images.find((image) => image.id === dropTarget.id);
-    if (!draggedImage || !targetImage || draggedImage.id === targetImage.id) {
+    if (!draggedImages.length || !targetImage || draggedImages.some((image) => image.id === targetImage.id)) {
       return;
     }
 
     const position = dropTarget?.position ?? 'right';
 
     setImages((current) => {
-      const fromIndex = current.findIndex((image) => image.id === draggedImage.id);
-      const updated = [...current];
-      const [removed] = updated.splice(fromIndex, 1);
+      const draggedIds = new Set(draggedImages.map((image) => image.id));
+      const removed = current.filter((image) => draggedIds.has(image.id));
+      const updated = current.filter((image) => !draggedIds.has(image.id));
 
       const adjustedTargetIndex = updated.findIndex((image) => image.id === targetImage.id);
       const insertionIndex = position === 'left' ? adjustedTargetIndex : adjustedTargetIndex + 1;
-      updated.splice(insertionIndex, 0, removed);
+      updated.splice(insertionIndex, 0, ...removed);
       return updated;
     });
 
     setDropTarget(null);
-    setDraggedImage(null);
+    setDraggedImages([]);
   };
 
   const clearSelection = () => {
