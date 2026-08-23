@@ -321,7 +321,7 @@ export const GalleryManager = ({
             onMouseDown={(e) => handleImageMouseDown(e, image)}
             onClick={(e) => handleImageClick(e, image)}
             className={cn(
-              'group block relative rounded outline-1 outline-transparent focus-visible:outline-sky-900 outline-offset-2 overflow-hidden transition-colors duration-300 ease-out cursor-pointer',
+              'group block relative rounded outline-1 outline-transparent focus-visible:outline-sky-900 outline-offset-2 w-full overflow-hidden transition-colors duration-300 ease-out cursor-pointer',
               { 'outline-primary!': image.id === displayImage?.id },
               { 'outline-2! outline-primary!': selectedImageIds.has(image.id) },
             )}>
@@ -334,7 +334,7 @@ export const GalleryManager = ({
               checked={displayValue === image.id}
               onChange={() => setDisplayValue(image.id)}
             />
-            <img src={image.src} alt={image.name} className='w-auto object-contain aspect-video checkered-bg' />
+            <img src={image.src} alt={image.name} className='w-full object-contain aspect-video checkered-bg' />
             <div className='bottom-0 absolute bg-muted px-1 text-muted-foreground text-xs truncate transition-transform translate-y-full group-hover:translate-y-0 duration-300 ease-out'>
               <small>{image.name}</small>
             </div>

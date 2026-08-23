@@ -11,6 +11,7 @@ import { Empty, EmptyTitle, EmptyMedia, EmptyHeader, EmptyDescription, EmptyCont
 import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/toast';
+import { cn } from '@/lib/utils';
 import { FolderDownIcon, LoaderCircleIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -56,6 +57,7 @@ export default function Dashboard() {
   const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
+  const [isExternalFileDrag, setIsExternalFileDrag] = useState(false);
   const displayImage = useMemo(() => images.find((el) => el.id === displayValue), [displayValue, images]);
 
   const previousImage = () => {
@@ -154,13 +156,23 @@ export default function Dashboard() {
   };
 
   const handleScreenDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+    if (!e.dataTransfer.types.includes('Files')) return;
+
+    e.preventDefault();
+    setIsExternalFileDrag(true);
+  };
+
+  const handleScreenDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsExternalFileDrag(false);
+    }
   };
 
   const handleScreenDrop = (e: React.DragEvent<HTMLDivElement>) => {
     if (!e.dataTransfer.files.length) return;
 
     e.preventDefault();
+    setIsExternalFileDrag(false);
     void importFiles(Array.from(e.dataTransfer.files));
   };
 
@@ -265,8 +277,12 @@ export default function Dashboard() {
 
   return (
     <div
-      className='flex flex-col mx-auto pr-6 pl-8 max-w-[1920px] h-svh overflow-hidden font-sans'
+      className={cn(
+        'flex flex-col mx-auto pr-6 pl-8 max-w-[1920px] h-svh overflow-hidden font-sans transition-colors ease-out',
+        { 'bg-accent': isExternalFileDrag },
+      )}
       onDragOver={handleScreenDragOver}
+      onDragLeave={handleScreenDragLeave}
       onDrop={handleScreenDrop}>
       <Heading />
       {isLoadingImages ? (
