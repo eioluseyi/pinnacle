@@ -156,10 +156,6 @@ export const GalleryManager = ({
     sendUpdate(displayImage);
   }, [displayImage, sendUpdate]);
 
-  useEffect(() => {
-    localStorage.setItem('image-order', JSON.stringify(images.map((image) => image.id)));
-  }, [images]);
-
   // first:rounded-tl-4xl nth-[1]:rounded-tr-4xl @md:nth-[1]:rounded-tr @md:nth-[2]:rounded-tr-4xl @xl:nth-[2]:rounded-tr @xl:nth-[3]:rounded-tr-4xl @4xl:nth-[3]:rounded-tr @4xl:nth-[4]:rounded-tr-4xl @5xl:nth-[4]:rounded-tr @5xl:nth-[5]:rounded-tr-4xl
 
   return (

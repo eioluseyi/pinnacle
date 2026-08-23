@@ -82,25 +82,20 @@ export default function Dashboard() {
 
   const importFiles = async (files: File[], target?: FileDropTarget) => {
     const imageObjects = await Promise.all(
-      files
-        .filter((file) => file.type.startsWith('image/'))
-        .map(async (file) => ({
-          id: file.name,
-          name: file.name,
-          src: await handleUpload(file),
-        })),
+      files.filter((file) => file.type.startsWith('image/')).map((file) => handleUpload(file)),
     );
+    const uploadedImages = imageObjects.filter((image): image is ImageObject => image !== null);
 
-    if (!imageObjects.length) return;
+    if (!uploadedImages.length) return;
 
     setImages((current) => {
-      if (!target) return [...current, ...imageObjects];
+      if (!target) return [...current, ...uploadedImages];
 
       const targetIndex = current.findIndex((image) => image.id === target.id);
-      if (targetIndex === -1) return [...current, ...imageObjects];
+      if (targetIndex === -1) return [...current, ...uploadedImages];
 
       const insertionIndex = target.position === 'left' ? targetIndex : targetIndex + 1;
-      return [...current.slice(0, insertionIndex), ...imageObjects, ...current.slice(insertionIndex)];
+      return [...current.slice(0, insertionIndex), ...uploadedImages, ...current.slice(insertionIndex)];
     });
   };
 
@@ -115,8 +110,8 @@ export default function Dashboard() {
     void importFiles(Array.from(e.dataTransfer.files));
   };
 
-  async function handleUpload(file: File) {
-    if (!file) return '';
+  async function handleUpload(file: File): Promise<ImageObject | null> {
+    if (!file) return null;
 
     const formData = new FormData();
     formData.append('file', file);
@@ -133,10 +128,10 @@ export default function Dashboard() {
         throw new Error(data.error);
       }
 
-      return data.image?.src as string;
+      return data.image as ImageObject;
     } catch (err) {
       console.error(err, file.name);
-      return '';
+      return null;
     }
   }
 
@@ -194,6 +189,12 @@ export default function Dashboard() {
       }
     })();
   }, [loadImages]);
+
+  useEffect(() => {
+    if (!isLoadingImages) {
+      localStorage.setItem('image-order', JSON.stringify(images.map((image) => image.id)));
+    }
+  }, [images, isLoadingImages]);
 
   return (
     <div
