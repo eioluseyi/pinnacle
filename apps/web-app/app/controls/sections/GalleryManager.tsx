@@ -297,7 +297,7 @@ export const GalleryManager = ({
     <div
       role='radiogroup'
       ref={galleryRef}
-      className='relative gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2 max-h-150 overflow-x-visible overflow-y-auto scroll-fade-y'
+      className='relative flex-1 content-start gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2'
       onMouseDown={handleSelectionStart}
       onClick={clearSelection}
       onDragOver={handleGridDragOver}

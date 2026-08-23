@@ -98,6 +98,21 @@ export default function Dashboard() {
     setSelectedImageIds(new Set());
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isEditable = target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+      const isDeleteKey = e.key === 'Delete' || e.key === 'Backspace';
+
+      if (!isDeleteKey || isEditable || selectedImageIds.size === 0) return;
+      e.preventDefault();
+      void deleteSelectedImages();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [images, selectedImageIds, displayValue]);
+
   const importFiles = async (files: File[], target?: FileDropTarget) => {
     const imageObjects = await Promise.all(
       files.filter((file) => file.type.startsWith('image/')).map((file) => handleUpload(file)),
@@ -224,7 +239,7 @@ export default function Dashboard() {
         <LoadingState />
       ) : images.length ? (
         <div className='flex flex-1 gap-5 overflow-hidden'>
-          <main className='@container z-10 relative flex-1 h-full max-h-full overflow-x-hidden overflow-y-auto'>
+          <main className='@container z-10 relative flex flex-col flex-1 h-full max-h-full overflow-x-hidden overflow-y-auto'>
             <GalleryManager
               displayValue={displayValue}
               setDisplayValue={setDisplayValue}
@@ -239,7 +254,7 @@ export default function Dashboard() {
             <div className='bottom-4 sticky flex justify-end items-center gap-2 pt-8 w-full pointer-events-none'>
               {selectedImageIds.size > 0 && (
                 <Button
-                  className='pointer-events-auto'
+                  className='bg-destructive/30! shadow-2xl shadow-black backdrop-blur-lg border-none pointer-events-auto'
                   type='button'
                   variant='destructive'
                   size='lg'
@@ -249,7 +264,7 @@ export default function Dashboard() {
                 </Button>
               )}
               <Button
-                className='shadow-2xl shadow-black backdrop-blur-lg pointer-events-auto'
+                className='bg-background/30 shadow-2xl shadow-black backdrop-blur-lg border-none pointer-events-auto'
                 variant='ghost'
                 size='lg'
                 onClick={selectImageFile}>
