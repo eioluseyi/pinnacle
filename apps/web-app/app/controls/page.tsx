@@ -101,7 +101,9 @@ export default function Dashboard() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const isEditable = target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+      const isEditableContent = target.isContentEditable || ['TEXTAREA', 'SELECT'].includes(target.tagName);
+      const isEditable =
+        isEditableContent || (['INPUT'].includes(target.tagName) && (target as HTMLInputElement).name !== 'display');
       const isDeleteKey = e.key === 'Delete' || e.key === 'Backspace';
 
       if (isEditable) return;
