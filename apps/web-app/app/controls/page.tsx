@@ -327,7 +327,7 @@ export default function Dashboard() {
               selectedImageIds={selectedImageIds}
               setSelectedImageIds={setSelectedImageIds}
             />
-            <div className='bottom-4 sticky flex justify-end items-center gap-2 pt-8 w-full pointer-events-none'>
+            <div className='bottom-0 sticky flex justify-end items-center gap-2 bg-linear-to-t from-10% from-background to-90% to-background/0 pt-8 pb-4 w-full pointer-events-none'>
               {selectedImageIds.size > 0 && (
                 <Button
                   className='bg-destructive/30! shadow-2xl shadow-black backdrop-blur-lg border-none pointer-events-auto'
