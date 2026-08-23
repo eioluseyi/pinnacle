@@ -4,7 +4,6 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { bucketDir } from '../helpers';
 
 const router = express.Router();
@@ -65,18 +64,32 @@ router.post('/api/upload', upload.single('file'), async (req, res) => {
 
     await ensureBucketExists();
 
-    const extension = path.extname(file.originalname);
-    const filename = `${Date.now()}-${crypto.randomUUID()}${extension}`;
+    const parsedName = path.parse(path.basename(file.originalname));
+    const baseName = parsedName.name || 'image';
+    const extension = parsedName.ext;
+    let filename = `${baseName}${extension}`;
+    let suffix = 1;
 
-    const filepath = path.join(bucketDir, filename);
+    while (true) {
+      const filepath = path.join(bucketDir, filename);
 
-    await fs.writeFile(filepath, file.buffer);
+      try {
+        const handle = await fs.open(filepath, 'wx');
+        await handle.writeFile(file.buffer);
+        await handle.close();
+        break;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+        filename = `${baseName} (${suffix})${extension}`;
+        suffix += 1;
+      }
+    }
 
     res.json({
       success: true,
       image: {
         id: filename,
-        name: file.originalname,
+        name: filename,
         src: `/bucket/${filename}`,
       },
     });

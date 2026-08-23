@@ -55,28 +55,28 @@ export default function Dashboard() {
   const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [displayValue, setDisplayValue] = useState<string | null>(null);
   const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
-  const displayImage = useMemo(() => images.find((el) => el.name === displayValue), [displayValue, images]);
+  const displayImage = useMemo(() => images.find((el) => el.id === displayValue), [displayValue, images]);
 
   const previousImage = () => {
     if (!images.length) return;
 
-    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
+    const currentImageIndex = images.findIndex((el) => el.id === displayValue);
     const previousImageIndex = (() => {
       if (currentImageIndex === 0) return images.length - 1;
       return currentImageIndex - 1;
     })();
-    setDisplayValue(images[previousImageIndex].name);
+    setDisplayValue(images[previousImageIndex].id);
   };
 
   const nextImage = () => {
     if (!images.length) return;
 
-    const currentImageIndex = images.findIndex((el) => el.name === displayValue);
+    const currentImageIndex = images.findIndex((el) => el.id === displayValue);
     const nextImageIndex = (() => {
       if (currentImageIndex === images.length - 1) return 0;
       return currentImageIndex + 1;
     })();
-    setDisplayValue(images[nextImageIndex].name);
+    setDisplayValue(images[nextImageIndex].id);
   };
 
   const clearImage = () => setDisplayValue('');
@@ -89,7 +89,7 @@ export default function Dashboard() {
     });
 
     setImages((current) => current.filter((item) => item.id !== image.id));
-    if (displayValue === image.name) setDisplayValue(null);
+    if (displayValue === image.id) setDisplayValue(null);
   };
 
   const deleteSelectedImages = async () => {

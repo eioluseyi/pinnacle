@@ -322,17 +322,17 @@ export const GalleryManager = ({
             onClick={(e) => handleImageClick(e, image)}
             className={cn(
               'group block relative rounded outline-1 outline-transparent focus-visible:outline-sky-900 outline-offset-2 overflow-hidden transition-colors duration-300 ease-out cursor-pointer',
-              { 'outline-primary!': image.name === displayImage?.name },
+              { 'outline-primary!': image.id === displayImage?.id },
               { 'outline-2! outline-primary!': selectedImageIds.has(image.id) },
             )}>
             <input
-              id={image.name}
+              id={image.id}
               className='absolute opacity-0 pointer-events-none'
               type='radio'
               name='display'
-              value={image.name}
-              checked={displayValue === image.name}
-              onChange={() => setDisplayValue(image.name)}
+              value={image.id}
+              checked={displayValue === image.id}
+              onChange={() => setDisplayValue(image.id)}
             />
             <img src={image.src} alt={image.name} className='w-auto object-contain aspect-video checkered-bg' />
             <div className='bottom-0 absolute bg-muted px-1 text-muted-foreground text-xs truncate transition-transform translate-y-full group-hover:translate-y-0 duration-300 ease-out'>
