@@ -3,6 +3,7 @@ import { Geist_Mono, Instrument_Sans, Instrument_Serif } from 'next/font/google'
 import './globals.css';
 import { LayoutProvider } from '@/providers/LayoutProvider';
 import { cn } from '@/lib/utils';
+import { Toaster } from '@/components/ui/toast';
 
 const instrumentSans = Instrument_Sans({
   variable: '--font-sans',
@@ -35,7 +36,10 @@ export default function RootLayout({
       <html
         lang='en'
         className={cn(instrumentSans.variable, instrumentSerif.variable, geistMono.variable, 'h-full antialiased')}>
-        <body className='min-h-full flex flex-col'>{children}</body>
+        <body className='min-h-full flex flex-col'>
+          {children}
+          <Toaster />
+        </body>
       </html>
     </LayoutProvider>
   );
