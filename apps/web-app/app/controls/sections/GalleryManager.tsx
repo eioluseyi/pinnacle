@@ -112,7 +112,9 @@ export const GalleryManager = ({
     e.dataTransfer.effectAllowed = 'move';
 
     // Find the inner image element
-    const imagesToDrag = selectedImageIds.has(image.id) ? images.filter((item) => selectedImageIds.has(item.id)) : [image];
+    const imagesToDrag = selectedImageIds.has(image.id)
+      ? images.filter((item) => selectedImageIds.has(item.id))
+      : [image];
     const imgElement = document.createElement('img');
     imgElement.src = imagesToDrag[0]?.src || '';
     imgElement.classList.add('w-60', 'aspect-video', 'object-contain', 'checkered-bg', 'opacity-50');
