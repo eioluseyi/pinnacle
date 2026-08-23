@@ -104,7 +104,15 @@ export default function Dashboard() {
       const isEditable = target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
       const isDeleteKey = e.key === 'Delete' || e.key === 'Backspace';
 
-      if (!isDeleteKey || isEditable || selectedImageIds.size === 0) return;
+      if (isEditable) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setSelectedImageIds(new Set(images.map((image) => image.id)));
+        return;
+      }
+
+      if (!isDeleteKey || selectedImageIds.size === 0) return;
       e.preventDefault();
       void deleteSelectedImages();
     };
