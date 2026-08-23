@@ -2,6 +2,7 @@
 'use client';
 
 import { GalleryManager } from '@/app/controls/sections/GalleryManager';
+import type { FileDropTarget } from '@/app/controls/sections/GalleryManager';
 import { Heading } from '@/app/controls/sections/Heading';
 import { LivePreview } from '@/app/controls/sections/LivePreview';
 import { Button } from '@/components/ui/button';
@@ -79,6 +80,41 @@ export default function Dashboard() {
 
   const clearImage = () => setDisplayValue('');
 
+  const importFiles = async (files: File[], target?: FileDropTarget) => {
+    const imageObjects = await Promise.all(
+      files
+        .filter((file) => file.type.startsWith('image/'))
+        .map(async (file) => ({
+          id: file.name,
+          name: file.name,
+          src: await handleUpload(file),
+        })),
+    );
+
+    if (!imageObjects.length) return;
+
+    setImages((current) => {
+      if (!target) return [...current, ...imageObjects];
+
+      const targetIndex = current.findIndex((image) => image.id === target.id);
+      if (targetIndex === -1) return [...current, ...imageObjects];
+
+      const insertionIndex = target.position === 'left' ? targetIndex : targetIndex + 1;
+      return [...current.slice(0, insertionIndex), ...imageObjects, ...current.slice(insertionIndex)];
+    });
+  };
+
+  const handleScreenDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+  };
+
+  const handleScreenDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!e.dataTransfer.files.length) return;
+
+    e.preventDefault();
+    void importFiles(Array.from(e.dataTransfer.files));
+  };
+
   async function handleUpload(file: File) {
     if (!file) return '';
 
@@ -111,21 +147,7 @@ export default function Dashboard() {
     if (!filesObject) return;
 
     const files = Array.from(filesObject);
-    if (files) {
-      const imageObjects = await Promise.all(
-        files.map(async (file) => {
-          const src = await handleUpload(file);
-
-          return {
-            id: file.name,
-            name: file.name,
-            src,
-          };
-        }),
-      );
-
-      setImages((current) => [...current, ...imageObjects]);
-    }
+    if (files) void importFiles(files);
   };
 
   const selectImageFile = () => {
@@ -174,7 +196,10 @@ export default function Dashboard() {
   }, [loadImages]);
 
   return (
-    <div className='flex flex-col mx-auto pr-6 pl-8 max-w-[1920px] h-svh overflow-hidden font-sans'>
+    <div
+      className='flex flex-col mx-auto pr-6 pl-8 max-w-[1920px] h-svh overflow-hidden font-sans'
+      onDragOver={handleScreenDragOver}
+      onDrop={handleScreenDrop}>
       <Heading />
       {isLoadingImages ? (
         <LoadingState />
@@ -187,6 +212,7 @@ export default function Dashboard() {
               images={images}
               setImages={setImages}
               displayImage={displayImage}
+              onFilesDrop={importFiles}
             />
             <div className='bottom-4 sticky flex justify-end pt-8 w-full pointer-events-none'>
               <Button

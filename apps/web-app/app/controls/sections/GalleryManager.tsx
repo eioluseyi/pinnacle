@@ -10,9 +10,11 @@ type GalleryManagerProps = {
   displayValue: string | null;
   setDisplayValue: Dispatch<SetStateAction<string | null>>;
   displayImage?: ImageObject;
+  onFilesDrop: (files: File[], target?: FileDropTarget) => void;
 };
 
 type DropPosition = 'left' | 'right';
+export type FileDropTarget = { id: string; position: DropPosition };
 
 export const GalleryManager = ({
   images,
@@ -20,6 +22,7 @@ export const GalleryManager = ({
   displayValue,
   setDisplayValue,
   displayImage,
+  onFilesDrop,
 }: GalleryManagerProps) => {
   const socket = useSocket();
   const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
@@ -89,10 +92,24 @@ export const GalleryManager = ({
     setDropTargetFromPoint(e.clientX, e.clientY, e.currentTarget);
   };
 
-  const handleDrop = (targetImage: ImageObject, position = dropTarget?.position ?? 'right') => {
-    if (!draggedImage || draggedImage.id === targetImage.id) {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.dataTransfer.files.length) {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = setDropTargetFromPoint(e.clientX, e.clientY, e.currentTarget);
+      const targetImage = target && images.find((image) => image.id === target.id);
+
+      setDropTarget(null);
+      onFilesDrop(Array.from(e.dataTransfer.files), targetImage ? target : undefined);
       return;
     }
+
+    const targetImage = dropTarget && images.find((image) => image.id === dropTarget.id);
+    if (!draggedImage || !targetImage || draggedImage.id === targetImage.id) {
+      return;
+    }
+
+    const position = dropTarget?.position ?? 'right';
 
     setImages((current) => {
       const fromIndex = current.findIndex((image) => image.id === draggedImage.id);
@@ -150,12 +167,7 @@ export const GalleryManager = ({
       role='radiogroup'
       className='gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2 max-h-150 overflow-x-visible overflow-y-auto scroll-fade-y'
       onDragOver={handleGridDragOver}
-      onDrop={(e) => {
-        const target = setDropTargetFromPoint(e.clientX, e.clientY, e.currentTarget);
-        const targetImage = target && images.find((image) => image.id === target.id);
-
-        if (targetImage) handleDrop(targetImage, target.position);
-      }}>
+      onDrop={handleDrop}>
       {images.map((image) => (
         <div key={image.id} className='relative' data-image-id={image.id}>
           <label
