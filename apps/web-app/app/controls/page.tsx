@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Empty, EmptyTitle, EmptyMedia, EmptyHeader, EmptyDescription, EmptyContent } from '@/components/ui/empty';
 import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
 import { Separator } from '@/components/ui/separator';
+import { toast } from '@/components/ui/toast';
 import { FolderDownIcon, LoaderCircleIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -165,15 +166,26 @@ export default function Dashboard() {
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: { error?: string; image?: ImageObject } = {};
 
-      if (!response.ok) {
-        throw new Error(data.error);
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        if (!response.ok) {
+          throw new Error(responseText || 'Upload failed');
+        }
       }
 
-      return data.image as ImageObject;
+      if (!response.ok) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      if (!data.image) throw new Error('Upload returned no image');
+
+      return data.image;
     } catch (err) {
-      console.error(err, file.name);
+      toast.add({ title: 'Upload failed', description: `Unable to upload ${file.name}`, type: 'error' });
       return null;
     }
   }
