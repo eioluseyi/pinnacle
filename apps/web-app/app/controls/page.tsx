@@ -125,10 +125,20 @@ export default function Dashboard() {
   }, [images, selectedImageIds, displayValue]);
 
   const importFiles = async (files: File[], target?: FileDropTarget) => {
-    const imageObjects = await Promise.all(
-      files.filter((file) => file.type.startsWith('image/')).map((file) => handleUpload(file)),
-    );
-    const uploadedImages = imageObjects.filter((image): image is ImageObject => image !== null);
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    if (!imageFiles.length) return;
+
+    const uploadPromise = Promise.all(imageFiles.map((file) => handleUpload(file, false)));
+    const uploadedImages = (
+      await toast.promise(uploadPromise, {
+        loading: `Importing ${imageFiles.length} ${imageFiles.length === 1 ? 'image' : 'images'}...`,
+        success: (results) => {
+          const uploadedCount = results.filter((image): image is ImageObject => image !== null).length;
+          return `${uploadedCount} ${uploadedCount === 1 ? 'image' : 'images'} imported`;
+        },
+        error: 'Unable to import images',
+      })
+    ).filter((image): image is ImageObject => image !== null);
 
     if (!uploadedImages.length) return;
 
@@ -154,7 +164,7 @@ export default function Dashboard() {
     void importFiles(Array.from(e.dataTransfer.files));
   };
 
-  async function handleUpload(file: File): Promise<ImageObject | null> {
+  async function handleUpload(file: File, notifyOnError = true): Promise<ImageObject | null> {
     if (!file) return null;
 
     const formData = new FormData();
@@ -185,7 +195,9 @@ export default function Dashboard() {
 
       return data.image;
     } catch (err) {
+      // if (notifyOnError) {
       toast.add({ title: 'Upload failed', description: `Unable to upload ${file.name}`, type: 'error' });
+      // }
       return null;
     }
   }
