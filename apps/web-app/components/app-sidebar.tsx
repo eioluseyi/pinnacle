@@ -10,24 +10,25 @@ import { useIpAddress } from '@/hooks/useIpAddress';
 import { cn } from '@/lib/utils';
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { toast } from '@/components/ui/toast';
 
 const Header = () => {
   const { ipAddress, portNumber, ipChanged } = useIpAddress();
 
   return (
     <SidebarHeader>
-      <div className='group/sidebar-header px-2 py-4 flex items-center gap-2'>
+      <div className='group/sidebar-header flex items-center gap-2 px-2 py-4'>
         <LogoIconSvg className='w-12 h-fit' />
         <div className='text-left'>
-          <div className='font-black [text-box:trim-both] cursor-default select-none'>Pinnacle</div>
-          <div className='relative text-xs grid grid-cols-[0fr_auto] group-hover/sidebar-header:grid-cols-[1fr_auto] transition-all duration-300 ease-out delay-1000 group-hover/sidebar-header:delay-0'>
+          <div className='font-black cursor-default select-none [text-box:trim-both]'>Pinnacle</div>
+          <div className='relative grid grid-cols-[0fr_auto] group-hover/sidebar-header:grid-cols-[1fr_auto] text-xs transition-all duration-300 ease-out delay-1000 group-hover/sidebar-header:delay-0'>
             <span className='overflow-hidden text-muted-foreground'>http://</span>
             <span className='text-muted-foreground'>
               {ipAddress}:{portNumber}
             </span>
             <span
               className={cn(
-                'absolute block pointer-events-none inset-y-0 h-fit left-full ml-2 text-amber-200 transition-opacity duration-300 rounded-full bg-amber-700 px-2 my-auto',
+                'block left-full absolute inset-y-0 bg-amber-700 my-auto ml-2 px-2 rounded-full h-fit text-amber-200 transition-opacity duration-300 pointer-events-none',
                 { 'opacity-0': !ipChanged },
               )}>
               Updated
@@ -39,14 +40,14 @@ const Header = () => {
   );
 };
 
-// Setup Guide
-const setupGuide = [
+// Troubleshooting Guide
+const troubleshootingGuide = [
   {
-    title: <span>Connect to Home Wi-Fi</span>,
+    title: <span>Check for IP Changes</span>,
     description: (
       <span>
-        Ensure your computer is on a home Wi-Fi network. Avoid public Wi-Fi at cafes or hotels, which blocks devices
-        from connecting to each other.
+        If the connection drops or stops working, check the app screen on your main computer to see if the IP address
+        updated, and enter the new address on your second device.
       </span>
     ),
   },
@@ -56,50 +57,6 @@ const setupGuide = [
       <span>
         Go to your Windows network settings and confirm your connection type is set to <strong>Private</strong> (Public
         mode blocks local sharing).
-      </span>
-    ),
-  },
-  {
-    title: <span>Launch the App & Allow Access</span>,
-    description: (
-      <span>
-        Open the application. If a security or firewall window pops up asking for network permissions, click{' '}
-        <strong>Allow</strong> or <strong>Grant Access</strong>.
-      </span>
-    ),
-  },
-  {
-    title: <span>Find the Address on Your Screen</span>,
-    description: (
-      <span>
-        Look at the app window to find the web address displayed on screen (formatted as{' '}
-        <code>http://&lt;IP&gt;:&lt;PORT&gt;</code>).{' '}
-        <em>
-          Note: Your IP address can change if you restart your computer or reconnect to Wi-Fi—always check the app
-          screen for the current address.
-        </em>
-      </span>
-    ),
-  },
-  {
-    title: <span>Share the Address</span>,
-    description: (
-      <span>
-        Type or send that exact <code>http://&lt;IP&gt;:&lt;PORT&gt;</code> address into the web browser on the other
-        device.
-      </span>
-    ),
-  },
-];
-
-// Troubleshooting Guide
-const troubleshootingGuide = [
-  {
-    title: <span>Check for IP Changes</span>,
-    description: (
-      <span>
-        If the connection drops or stops working, check the app screen on your main computer to see if the IP address
-        updated, and enter the new address on your second device.
       </span>
     ),
   },
@@ -133,26 +90,71 @@ const troubleshootingGuide = [
 ];
 
 const Instructions = () => {
+  const { ipAddress, portNumber } = useIpAddress();
+  // Setup Guide
+  const setupGuide = [
+    {
+      title: <span>Use private Wi-Fi</span>,
+      description: (
+        <span>
+          Use a private Wi-Fi or a mobile hotspot. Avoid public Wi-Fi in random places, which prevents devices from
+          connecting.
+        </span>
+      ),
+    },
+    {
+      title: <span>Launch & “Allow”</span>,
+      description: (
+        <span>
+          Open the application. If a security or firewall window pops up asking for network permissions, click{' '}
+          <strong>Allow</strong> or <strong>Grant Access</strong>.
+        </span>
+      ),
+    },
+    {
+      title: <span>Share the Address</span>,
+      description: (
+        <span>
+          Type or send this exact{' '}
+          <button
+            onClick={() => {
+              void navigator.clipboard.writeText(`http://${ipAddress}:${portNumber}`).then(() => {
+                toast.add({ title: 'Copied to clipboard' });
+              });
+            }}
+            type='button'>
+            <strong>
+              <code>
+                http://{ipAddress}:{portNumber}
+              </code>
+            </strong>
+          </button>{' '}
+          address into the web browser on the other device.
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className='mt-auto mb-0'>
-      <Marker className='px-4 mb-2 text-primary' variant='separator'>
+      <Marker className='mb-2 px-4 text-primary' variant='separator'>
         <MarkerContent>Setup guide</MarkerContent>
       </Marker>
-      <Accordion className='border-none rounded-none text-muted-foreground mb-8' defaultValue={[]}>
+      <Accordion className='mb-8 border-none rounded-none text-muted-foreground' defaultValue={['item-3']}>
         {setupGuide.map((itm, idx) => (
-          <AccordionItem key={idx} className='border-none px-4' value={`item-${idx + 1}`}>
+          <AccordionItem key={idx} className='px-4 border-none' value={`item-${idx + 1}`}>
             <AccordionTrigger className='px-0 py-2 no-underline!'>{itm.title}</AccordionTrigger>
             <AccordionContent className='text-xs'>{itm.description}</AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
 
-      <Marker className='px-4 mb-2 text-primary' variant='separator'>
+      <Marker className='mb-2 px-4 text-primary' variant='separator'>
         <MarkerContent>Troubleshooting</MarkerContent>
       </Marker>
-      <Accordion className='border-none rounded-none text-muted-foreground mb-4' defaultValue={[]}>
+      <Accordion className='mb-4 border-none rounded-none text-muted-foreground' defaultValue={[]}>
         {troubleshootingGuide.map((itm, idx) => (
-          <AccordionItem key={idx} className='border-none px-4' value={`item-${idx + 1}`}>
+          <AccordionItem key={idx} className='px-4 border-none' value={`item-${idx + 1}`}>
             <AccordionTrigger className='px-0 py-2 no-underline!'>{itm.title}</AccordionTrigger>
             <AccordionContent className='text-xs'>{itm.description}</AccordionContent>
           </AccordionItem>
@@ -175,23 +177,23 @@ const Footer = () => {
 
   return (
     <SidebarFooter className='flex-row items-center gap-2 px-4'>
-      <hr className='border-muted flex-1' />
+      <hr className='flex-1 border-muted' />
       <Button variant='outline' size='icon' onClick={handleTheme}>
         <SunIcon
-          className={cn('h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0', {
+          className={cn('w-[1.2rem] h-[1.2rem] rotate-0 dark:-rotate-90 scale-100 dark:scale-0 transition-all', {
             'opacity-0': theme === 'system',
           })}
         />
         <MoonIcon
           className={cn(
-            'absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100',
+            'absolute w-[1.2rem] h-[1.2rem] rotate-90 dark:rotate-0 scale-0 dark:scale-100 transition-all',
             {
               'opacity-0': theme === 'system',
             },
           )}
         />
         <MonitorIcon
-          className={cn('absolute h-[1.2rem] w-[1.2rem] transition-all opacity-0', {
+          className={cn('absolute opacity-0 w-[1.2rem] h-[1.2rem] transition-all', {
             'opacity-100': theme === 'system',
           })}
         />
