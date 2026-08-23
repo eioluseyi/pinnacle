@@ -33,6 +33,15 @@ export const GalleryManager = ({
   const socket = useSocket();
   const [draggedImage, setDraggedImage] = useState<ImageObject | null>(null);
   const [dropTarget, setDropTarget] = useState<{ id: string; position: DropPosition } | null>(null);
+  const [selectionBox, setSelectionBox] = useState<{ left: number; top: number; width: number; height: number } | null>(
+    null,
+  );
+  const [isSelecting, setIsSelecting] = useState(false);
+  const galleryRef = useRef<HTMLDivElement | null>(null);
+  const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
+  const selectionBaseRef = useRef<Set<string>>(new Set());
+  const selectionModeRef = useRef<'replace' | 'add' | 'toggle'>('replace');
+  const didDragSelectRef = useRef(false);
   const dragPreviewRef = useRef<HTMLDivElement | null>(null);
 
   const handleImageSelection = (e: React.MouseEvent<HTMLLabelElement>, image: ImageObject) => {
@@ -195,8 +204,81 @@ export const GalleryManager = ({
   };
 
   const clearSelection = () => {
+    if (didDragSelectRef.current) {
+      didDragSelectRef.current = false;
+      return;
+    }
+
     setSelectedImageIds(new Set());
   };
+
+  const handleSelectionStart = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || (e.target as HTMLElement).closest('label, button, input')) return;
+
+    const bounds = e.currentTarget.getBoundingClientRect();
+    selectionStartRef.current = { x: e.clientX - bounds.left, y: e.clientY - bounds.top };
+    selectionModeRef.current = e.metaKey || e.ctrlKey ? 'toggle' : e.shiftKey ? 'add' : 'replace';
+    selectionBaseRef.current = e.metaKey || e.ctrlKey || e.shiftKey ? new Set(selectedImageIds) : new Set();
+    setIsSelecting(true);
+    setSelectionBox({ left: selectionStartRef.current.x, top: selectionStartRef.current.y, width: 0, height: 0 });
+  };
+
+  useEffect(() => {
+    if (!isSelecting) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const container = galleryRef.current;
+      const start = selectionStartRef.current;
+      if (!container || !start) return;
+
+      const bounds = container.getBoundingClientRect();
+      const current = { x: e.clientX - bounds.left, y: e.clientY - bounds.top };
+      const left = Math.min(start.x, current.x);
+      const top = Math.min(start.y, current.y);
+      const width = Math.abs(current.x - start.x);
+      const height = Math.abs(current.y - start.y);
+      const selectionRect = { left, top, width, height };
+
+      setSelectionBox(selectionRect);
+      if (width < 4 && height < 4) return;
+
+      didDragSelectRef.current = true;
+      const selectedIds = new Set(selectionBaseRef.current);
+      container.querySelectorAll<HTMLElement>('[data-image-id]').forEach((item) => {
+        const itemBounds = item.getBoundingClientRect();
+        const intersects =
+          itemBounds.left < bounds.left + left + width &&
+          itemBounds.right > bounds.left + left &&
+          itemBounds.top < bounds.top + top + height &&
+          itemBounds.bottom > bounds.top + top;
+
+        const id = item.dataset.imageId;
+        if (!intersects || !id) return;
+
+        if (selectionModeRef.current === 'toggle') {
+          if (selectedIds.has(id)) selectedIds.delete(id);
+          else selectedIds.add(id);
+        } else {
+          selectedIds.add(id);
+        }
+      });
+      selectedIds.delete('');
+      setSelectedImageIds(selectedIds);
+    };
+
+    const handleMouseUp = () => {
+      setIsSelecting(false);
+      setSelectionBox(null);
+      selectionStartRef.current = null;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isSelecting]);
 
   const sendUpdate = useCallback(
     (payload?: ImageObject) => {
@@ -214,10 +296,19 @@ export const GalleryManager = ({
   return (
     <div
       role='radiogroup'
-      className='gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2 max-h-150 overflow-x-visible overflow-y-auto scroll-fade-y'
+      ref={galleryRef}
+      className='relative gap-2 grid @md:grid-cols-2 @4xl:grid-cols-4 @5xl:grid-cols-5 @xl:grid-cols-3 p-2 max-h-150 overflow-x-visible overflow-y-auto scroll-fade-y'
+      onMouseDown={handleSelectionStart}
       onClick={clearSelection}
       onDragOver={handleGridDragOver}
       onDrop={handleDrop}>
+      {selectionBox && (
+        <span
+          aria-hidden='true'
+          className='z-20 absolute bg-primary/15 border border-primary pointer-events-none'
+          style={selectionBox}
+        />
+      )}
       {images.map((image) => (
         <div key={image.id} className='relative' data-image-id={image.id}>
           <label
