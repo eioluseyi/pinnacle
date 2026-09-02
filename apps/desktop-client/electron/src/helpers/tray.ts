@@ -6,14 +6,10 @@ import {
   popoverWindowState,
   offscreenWindowState,
   displayState,
-  syphonServerState,
+  trayReadyState,
 } from '@/electron/src/appState';
 
 const __dirname = path.dirname(__filename);
-
-export function setSyphonServer(server: any) {
-  syphonServerState.setState(server);
-}
 
 export function getDisplay() {
   return displayState.value;
@@ -50,7 +46,7 @@ function togglePopover() {
   popoverWindow.focus();
 }
 
-export function createTrayApp() {
+export function initTrayApp() {
   try {
     // Hide Dock icon on macOS
     if (process.platform === 'darwin' && app.dock) {
@@ -72,7 +68,6 @@ export function createTrayApp() {
     // Popover UI Setup
     const newPopoverWindow = new BrowserWindow({
       width: 320,
-      height: 150,
       show: false,
       frame: false,
       resizable: false,
@@ -90,56 +85,7 @@ export function createTrayApp() {
     newPopoverWindow.loadURL('http://localhost:3000');
     newPopoverWindow.on('blur', () => newPopoverWindow?.hide());
     popoverWindowState.setState(newPopoverWindow);
-
-    // Offscreen Renderer Setup
-    const newOffscreenWindow = new BrowserWindow({
-      width: 1920,
-      height: 1080,
-      show: false,
-      webPreferences: {
-        offscreen: true,
-      },
-    });
-
-    newOffscreenWindow.webContents.setFrameRate(60);
-    offscreenWindowState.setState(newOffscreenWindow);
-
-    // Stream raw frames to Syphon / Spout
-    newOffscreenWindow.webContents.on('paint', (event, dirty, image) => {
-      try {
-        const size = image.getSize();
-        const buffer = image.toBitmap();
-
-        // 2. Create a fast 32-bit View over the raw array buffer
-        // This allows us to process 4 bytes (1 whole pixel) at a time
-        const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-
-        // 3. Loop through every pixel and swap Blue (Byte 0) with Red (Byte 2)
-        for (let i = 0; i < view.byteLength; i += 4) {
-          const b = view.getUint8(i); // Byte 0: Blue
-          const r = view.getUint8(i + 2); // Byte 2: Red
-
-          view.setUint8(i, r); // Move Red to Byte 0 position
-          view.setUint8(i + 2, b); // Move Blue to Byte 2 position
-        }
-
-        // 4. Wrap the corrected buffer into the Uint8ClampedArray Syphon needs
-        const clampedArray = new Uint8ClampedArray(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-
-        if (process.platform === 'darwin' && syphonServerState.value) {
-          try {
-            displayState.setState({ buffer: clampedArray, size });
-          } catch (err) {
-            logError('Error publishing to Syphon', err);
-          }
-        }
-        // Windows Spout logic attaches here
-      } catch (err) {
-        logError('Error processing paint event', err);
-      }
-    });
-
-    newOffscreenWindow.loadURL('http://10.248.96.175:3000'); // Load a default URL or leave blank
+    trayReadyState.setState(true);
   } catch (error) {
     logError('Failed to create tray app', error);
     throw error;

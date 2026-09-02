@@ -1,6 +1,7 @@
-import { initScanNetworkForPinnacle } from '@/electron/src/helpers/discovery';
+import { initScan } from '@/electron/src/helpers/discovery';
 import { bindProcessGuards, logError } from '@/electron/src/helpers/logger';
-import { createTrayApp } from '@/electron/src/helpers/tray';
+import { initDisplay } from '@/electron/src/helpers/renderServer';
+import { initTrayApp } from '@/electron/src/helpers/tray';
 import { initSentry } from '@/electron/src/lib/sentry';
 import { app, BrowserWindow } from 'electron/main';
 
@@ -9,9 +10,9 @@ export const getIsDev = () => !app.isPackaged;
 export function initErrorListeners() {
   try {
     initSentry();
-    bindProcessGuards();
   } catch (error) {
     console.error('Sentry initialization failed:', error);
+  } finally {
     bindProcessGuards();
   }
 }
@@ -23,9 +24,9 @@ export async function startApp() {
    * 3. Create the main syphon system to send the selected URL to the output stream
    */
   try {
-    initScanNetworkForPinnacle();
-    createTrayApp();
-    // createSyphon();
+    initTrayApp();
+    initDisplay();
+    initScan();
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {

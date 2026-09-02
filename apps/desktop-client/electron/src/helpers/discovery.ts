@@ -2,7 +2,7 @@ import util from 'node:util';
 import child_process from 'node:child_process';
 import { getLocalIpAddress } from '@pinnacle/utils';
 
-import { cacheNetworkIPs, networkIPs, pinnacleServers } from '@/electron/src/appState';
+import { cacheNetworkIPs, displayUrlState, networkIPs, pinnacleServers } from '@/electron/src/appState';
 import { getActiveBroadcastAddress, pingBroadcast } from '@/electron/src/helpers/network';
 import { logError, logger } from '@/electron/src/helpers/logger';
 
@@ -100,8 +100,11 @@ const scan = async () => {
   }
 };
 
-export const initScanNetworkForPinnacle = async () => {
+const getUrl = ({ host, port }: { host: string; port: number }) => `http://${host}:${port}`;
+
+export const initScan = async () => {
   pinnacleServers.subscribe((newState) => {
+    displayUrlState.setState(getUrl(newState[0]));
     logger.info('Pinnacle Servers state updated — Pinnacle servers: ', newState);
   });
 

@@ -12,7 +12,7 @@ const commonConfig = {
   format: 'cjs',
   target: 'node22',
   sourcemap: isDev,
-  external: ['electron', 'electron-squirrel-startup', 'update-electron-app'],
+  external: ['electron', 'electron-squirrel-startup', 'update-electron-app', 'node-syphon'],
 };
 
 function getAllFiles(dir) {
