@@ -23,7 +23,7 @@ export async function startApp() {
    * 3. Create the main syphon system to send the selected URL to the output stream
    */
   try {
-    // initScanNetworkForPinnacle();
+    initScanNetworkForPinnacle();
     createTrayApp();
     // createSyphon();
 
