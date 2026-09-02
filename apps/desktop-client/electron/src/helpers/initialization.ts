@@ -1,10 +1,8 @@
-import { app, BrowserWindow } from 'electron/main';
-
-import { bindProcessGuards, logError } from './logger';
-import { ports } from './ports';
-import { createWindow } from './server';
-import { initScanNetworkForPinnacle } from './discovery';
+import { initScanNetworkForPinnacle } from '@/electron/src/helpers/discovery';
+import { bindProcessGuards, logError } from '@/electron/src/helpers/logger';
+import { createTrayApp } from '@/electron/src/helpers/tray';
 import { initSentry } from '@/electron/src/lib/sentry';
+import { app, BrowserWindow } from 'electron/main';
 
 export const getIsDev = () => !app.isPackaged;
 
@@ -25,17 +23,15 @@ export async function startApp() {
    * 3. Create the main syphon system to send the selected URL to the output stream
    */
   try {
-    initScanNetworkForPinnacle();
-    // createTrayApp();
+    // initScanNetworkForPinnacle();
+    createTrayApp();
     // createSyphon();
-
-    const startWindow = async () => await createWindow({ nextPort: ports.next });
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
-        startWindow().catch((error) => {
-          logError('Window activation failed', error);
-        });
+        // startWindow().catch((error) => {
+        //   logError('Window activation failed', error);
+        // });
       }
     });
   } catch (error) {

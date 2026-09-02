@@ -14,22 +14,49 @@ const commonConfig = {
   sourcemap: isDev,
   external: ['electron', 'electron-squirrel-startup', 'update-electron-app'],
 };
+
+function getAllFiles(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  return entries.flatMap((entry) => {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      return getAllFiles(fullPath);
+    }
+
+    return [fullPath];
+  });
+}
+
 async function build() {
-  // 1. Read all .ts files directly inside the electronDir directory
-  const files = fs.readdirSync(electronDir);
-  const entryPoints = files.filter((file) => file.endsWith('.ts')).map((file) => path.join(electronDir, file));
+  if (!fs.existsSync(electronDir)) {
+    console.error('❌ Electron root folder not found:', electronDir);
+    process.exit(1);
+  }
+
+  const files = getAllFiles(electronDir);
+  const entryPoints = files.filter((file) => file.endsWith('.ts'));
 
   if (entryPoints.length === 0) {
     console.error('❌ No TypeScript entry points found in electron/');
     process.exit(1);
   }
 
-  // 2. Build all discovered files concurrently using esbuild's entryPoints object or array
+  for (const file of files.filter((file) => !file.endsWith('.ts'))) {
+    const relativePath = path.relative(electronDir, file);
+    const targetPath = path.join(outdir, relativePath);
+
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+    fs.copyFileSync(file, targetPath);
+  }
+
   await esbuild.build({
     ...commonConfig,
     allowOverwrite: true,
     entryPoints,
     outdir,
+    outbase: electronDir,
     outExtension: { '.js': '.cjs' }, // output bundled files as .cjs (e.g. main.ts -> main.cjs)
   });
 }
