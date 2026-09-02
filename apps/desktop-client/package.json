@@ -1,0 +1,79 @@
+{
+  "name": "@pinnacle/desktop-client",
+  "productName": "Pinnacle Client",
+  "description": "Client app to make Pinnacle app use smoother",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/electron/main.cjs",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eioluseyi/pinnacle.git"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev:client": "yarn build:electron && electron .",
+    "build:electron": "node build-electron.mjs",
+    "build": "yarn build:electron",
+    "make": "cross-env NODE_ENV=production DEBUG=electron-forge:* NODE_OPTIONS=\"--trace-warnings --trace-uncaught\" electron-forge make",
+    "publish": "electron-forge publish",
+    "bump": "yarn version --patch",
+    "bump-minor": "yarn version --minor",
+    "bump-major": "yarn version --major",
+    "postversion": "git push && git push --tags",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "next": "^16.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "update-electron-app": "^3.3.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-deb": "^7.11.2",
+    "@electron-forge/maker-dmg": "^7.11.2",
+    "@electron-forge/maker-rpm": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
+    "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron-forge/publisher-github": "^7.11.2",
+    "@electron/fuses": "^2.1.3",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/electron-squirrel-startup": "^1.0.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "electron": "^43.1.0",
+    "esbuild": "^0.20.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "author": "Emmanuel (EIO) Imolorhe | @eioluseyi <eioluseyi@gmail.com> (https://eioluseyi.com)",
+  "homepage": "https://pinnacle.eioluseyi.com",
+  "bugs": {
+    "url": "https://github.com/eioluseyi/pinnacle/issues",
+    "email": "eioluseyi@gmail.com"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/13160342/join"
+  },
+  "license": "MIT",
+  "keywords": [
+    "desktop-app",
+    "electron",
+    "nextjs",
+    "cross-platform",
+    "nodejs",
+    "websocket",
+    "monorepo",
+    "local-first",
+    "pinnacle",
+    "uk-software",
+    "british-tech",
+    "nigerian-software",
+    "nigerian-tech",
+    "desktop-utility"
+  ]
+}
