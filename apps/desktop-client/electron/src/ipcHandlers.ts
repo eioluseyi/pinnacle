@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron/main';
-import { logError, ports } from './helper';
 import { getLocalIpAddress } from '@pinnacle/utils';
+import { ports } from '@/electron/src/helpers/ports';
+import { logError } from '@/electron/src/helpers/logger';
 
 export const initIpcHandlers = () => {
   ipcMain.handle('get-local-ip', () => {

@@ -1,7 +1,11 @@
 import { app } from 'electron/main';
 import squirrelStartup from 'electron-squirrel-startup';
-import { initErrorListeners, initIpListener, initUpdater, logError, shutdownServices, startApp } from './helper';
-import { initIpcHandlers } from './ipcHandlers';
+import { initErrorListeners, startApp } from '@/electron/src/helpers/initialization';
+import { initUpdater } from '@/electron/src/helpers/updater';
+import { initIpcHandlers } from '@/electron/src/ipcHandlers';
+import { initIpListener } from '@/electron/src/helpers/network';
+import { logError } from '@/electron/src/helpers/logger';
+import { shutdownServices } from '@/electron/src/helpers/server';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (squirrelStartup) app.quit();
