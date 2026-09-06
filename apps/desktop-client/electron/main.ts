@@ -1,4 +1,4 @@
-import { app } from 'electron/main';
+import { app, protocol } from 'electron/main';
 import squirrelStartup from 'electron-squirrel-startup';
 import { initErrorListeners, startApp } from '@/electron/src/helpers/initialization';
 import { initUpdater } from '@/electron/src/helpers/updater';
@@ -14,6 +14,19 @@ initErrorListeners();
 initUpdater();
 initIpcHandlers();
 initIpListener();
+
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'pinnacle',
+    privileges: {
+      standard: true,
+      secure: true,
+      corsEnabled: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
+  },
+]);
 
 app
   .whenReady()

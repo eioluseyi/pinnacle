@@ -2,7 +2,16 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "lib": [
+      "dom",
+      "dom.iterable",
       "esnext"
+    ],
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
     ],
     "paths": {
       "@/*": [
@@ -12,6 +21,8 @@
   },
   "include": [
     "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
     "../../packages/shared-types/**/*.ts"
   ]
 }

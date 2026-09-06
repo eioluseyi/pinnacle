@@ -10,6 +10,8 @@
     "nohoist": [
       "**/esbuild",
       "**/esbuild/**",
+      "**/node-syphon",
+      "**/node-syphon/**",
       "**/electron",
       "**/electron/**",
       "**/@electron/fuses",

@@ -15,5 +15,8 @@
   "dependencies": {
     "@sentry/react": "10.67.0"
   },
+  "devDependencies": {
+    "@types/node": "^26.2.0"
+  },
   "license": "MIT"
 }

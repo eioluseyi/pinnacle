@@ -2068,17 +2068,10 @@
   resolved "https://registry.yarnpkg.com/@sentry/conventions/-/conventions-0.16.0.tgz#3b58d15714cf44dca1518496c00749eec5525009"
   integrity sha512-fO9PLmHdVURcSPUpWCItWAtgKiMwGdJHbovoSEyLplX5sxs2ugvI4CBPTrkkgqhObnZOD0CnWBKDzSVQYBKEyQ==
 
-"@sentry/core@10.67.0":
+"@sentry/core@10.67.0", "@sentry/core@10.70.0":
   version "10.67.0"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-10.67.0.tgz#38afb5484d2581d40b212303e8a1abba2daea7a2"
   integrity sha512-b6U3pJ8AUvN9aouq0vl+VZI8KT8RslBsfGMFuNwRr313zOmdmFJBZqTiUw9VGgJ2jGKxLO9alm9rlxBfX4hf+w==
-  dependencies:
-    "@sentry/conventions" "^0.16.0"
-
-"@sentry/core@10.70.0":
-  version "10.70.0"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-10.70.0.tgz#96eb9f2beab7d4b3b10c1b59ec7833e4dfe5fb73"
-  integrity sha512-ozhCTDqg89oB4XmWfAwuHshABpvT7AkRpaPnogopPfMAaI61G1t8EKCJ4W7aum8JSBonlfyjPCyW5oYZFm0KvA==
   dependencies:
     "@sentry/conventions" "^0.16.0"
 
@@ -6846,10 +6839,10 @@ node-releases@^2.0.53:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.53.tgz#0fe5ad8a7935e075172f574e56f0c20f07fa41af"
   integrity sha512-D9UOmYG3UH1V+ENW56t5QXBwJw1YEY18ruVeus89Rw+SyIgjPkCO84bRzO3uNIYosJbNwiabWVn48o3uJLjxFQ==
 
-node-syphon@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/node-syphon/-/node-syphon-1.0.0.tgz#1e9756b53f0a47704ed18ca38204b681fcac9e12"
-  integrity sha512-tRv1jl44PqGc1k98uJl3vvDxhsqsLC21dH2einZkDJfEhvegGsXZTGc1UAlniNIL6lshMgOREEg8bni+TM8zBQ==
+node-syphon@^1.0.0:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/node-syphon/-/node-syphon-1.5.1.tgz#a95628e582b6e13e4b7bce42f4a1c199e540ffb5"
+  integrity sha512-f4ysQFuAe1xaccOOOqsxh6NLG04yRJHojoLoiXN7MFX3Jj7ZFgj54kx/IVHObKNgds/5pLGm+2TsXAacl9kd/g==
   dependencies:
     bindings "^1.5.0"
 

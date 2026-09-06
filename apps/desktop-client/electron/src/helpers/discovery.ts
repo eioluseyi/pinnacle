@@ -92,11 +92,14 @@ const getPinnacleServers = async () => {
   return _pinnacleServers;
 };
 
-const scan = async () => {
+export const scan = async () => {
   try {
-    pinnacleServers.setState(await getPinnacleServers());
+    const servers = await getPinnacleServers();
+    pinnacleServers.setState(servers);
+    return servers;
   } catch (error) {
     logError('Failed to scan for Pinnacle servers', error);
+    return [];
   }
 };
 

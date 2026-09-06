@@ -14,6 +14,6 @@ export const displayState = createState<{
   size: { width: number; height: number };
 } | null>(null);
 export const renderServerState = createState<any>(null);
-export const renderServerHasClientState = createState<any>(false);
+export const renderServerHasClientState = createState(false);
 export const trayReadyState = createState(false);
 export const displayUrlState = createState<string | null>(null);

@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
     electronAPI?: {
-      loadUrl: (url: string) => void;
+      getDiscoveredServers: () => Promise<{ host: string; port: number }[]>;
+      refreshSearch: () => Promise<{ host: string; port: number }[]>;
+      onServersChanged: (callback: (servers: { host: string; port: number }[]) => void) => () => void;
+
+      setOutputStream: (url: string) => Promise<void>;
+      disconnectStream: () => Promise<void>;
+      getStreamStatus: () => Promise<'idle' | 'live'>;
+      onStreamStatusChanged: (callback: (status: 'idle' | 'live') => void) => () => void;
     };
   }
 }
@@ -21,53 +28,59 @@ type SyphonStatus = 'idle' | 'live';
 export default function Home() {
   const [url, setUrl] = useState('');
   const [syphonStatus, setSyphonStatus] = useState<SyphonStatus>('idle');
-  const [discoveredServers, setDiscoveredServers] = useState<DiscoveredServer[]>([
-    // { host: '192.168.1.10', port: 3000, name: 'Display 1' },
-    // { host: '192.168.1.10', port: 3001, name: 'Display 2' },
-    // { host: '192.168.1.11', port: 3002, name: 'Display 3' },
-    // { host: '192.168.1.12', port: 3005, name: 'Lobby Screen' },
-  ]);
+  const [discoveredServers, setDiscoveredServers] = useState<DiscoveredServer[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [connectedServer, setConnectedServer] = useState<DiscoveredServer | null>(null);
+  const electronApiRef = useRef<Window['electronAPI'] | null>(
+    (() => {
+      if (typeof window === 'undefined' || !window.electronAPI) return null;
+      return window.electronAPI;
+    })(),
+  );
+  const electronApi = electronApiRef.current;
 
   function formatServerUrl(server: DiscoveredServer): string {
-    return `${server.host}:${server.port}`;
+    return `http://${server.host}:${server.port}`;
   }
 
-  function submitUrl() {
-    const trimmedUrl = url.trim();
+  async function submitUrl(nextUrl = url) {
+    const trimmedUrl = nextUrl.trim();
+    if (!trimmedUrl || !electronApi) return;
 
-    if (trimmedUrl && window.electronAPI) {
-      window.electronAPI.loadUrl(trimmedUrl);
-      // Parse and set as connected server if it matches a discovered one
-      const matched = discoveredServers.find((s) => formatServerUrl(s) === trimmedUrl);
-      if (matched) {
-        setConnectedServer(matched);
-        setSyphonStatus('live');
-      }
+    await electronApi.setOutputStream(trimmedUrl);
+    const normalizedUrl = /^https?:\/\//i.test(trimmedUrl) ? trimmedUrl : `http://${trimmedUrl}`;
+    const matched = discoveredServers.find((server) => formatServerUrl(server) === normalizedUrl);
+
+    if (matched) {
+      setConnectedServer(matched);
     }
   }
 
   function handleServerClick(server: DiscoveredServer) {
     const serverUrl = formatServerUrl(server);
     setUrl(serverUrl);
-    submitUrl();
+    submitUrl(serverUrl);
   }
 
-  function handleRefreshSearch() {
+  async function handleRefreshSearch() {
+    if (!electronApi) return;
+
     setIsScanning(true);
-    // Simulate network scan
-    setTimeout(() => {
+
+    try {
+      const servers = await electronApi.refreshSearch();
+      setDiscoveredServers(servers);
+    } finally {
       setIsScanning(false);
-    }, 2000);
+    }
   }
 
-  function handleDisconnect() {
+  async function handleDisconnect() {
     setUrl('');
     setConnectedServer(null);
-    setSyphonStatus('idle');
-    if (window.electronAPI) {
-      window.electronAPI.loadUrl('');
+
+    if (electronApi) {
+      await electronApi.disconnectStream();
     }
   }
 
@@ -76,6 +89,34 @@ export default function Home() {
       submitUrl();
     }
   }
+
+  useEffect(() => {
+    if (!electronApi) return;
+
+    let mounted = true;
+
+    electronApi.getDiscoveredServers().then((servers) => {
+      if (mounted) setDiscoveredServers(servers);
+    });
+
+    electronApi.getStreamStatus().then((status) => {
+      if (mounted) setSyphonStatus(status);
+    });
+
+    const removeServersListener = electronApi.onServersChanged((servers) => {
+      setDiscoveredServers(servers);
+    });
+
+    const removeStatusListener = electronApi.onStreamStatusChanged((status) => {
+      setSyphonStatus(status);
+    });
+
+    return () => {
+      mounted = false;
+      removeServersListener();
+      removeStatusListener();
+    };
+  }, []);
 
   return (
     <main className='flex flex-col bg-[#1e1e1e] p-2 min-h-screen font-sans text-white select-none'>

@@ -1,5 +1,5 @@
 import { logError } from '@/electron/src/helpers/logger';
-import { app, BrowserWindow, Tray, nativeImage } from 'electron';
+import { app, BrowserWindow, Tray, nativeImage, protocol, net } from 'electron';
 import path from 'node:path';
 import {
   trayState,
@@ -8,6 +8,7 @@ import {
   displayState,
   trayReadyState,
 } from '@/electron/src/appState';
+import { pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(__filename);
 
@@ -65,24 +66,37 @@ export function initTrayApp() {
     newTray.on('click', togglePopover);
     trayState.setState(newTray);
 
+    const preload = path.join(__dirname, 'preload.cjs');
     // Popover UI Setup
     const newPopoverWindow = new BrowserWindow({
-      width: 320,
+      // width: 320,
+      width: 720,
+      height: 980,
       show: false,
       frame: false,
-      resizable: false,
+      resizable: !false,
       movable: false,
       alwaysOnTop: true,
       skipTaskbar: true,
       webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
+        preload,
         contextIsolation: true,
         nodeIntegration: false,
+        sandbox: false,
       },
     });
 
-    // newPopoverWindow.loadFile(path.join(__dirname, 'popover.html'));
-    newPopoverWindow.loadURL('http://localhost:3000');
+    protocol.handle('pinnacle', (request) => {
+      const requestUrl = new URL(request.url);
+      const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\/+/, '');
+      const filePath = path.join(__dirname, '../next', relativePath || 'index.html');
+
+      return net.fetch(pathToFileURL(filePath).toString());
+    });
+
+    newPopoverWindow.loadURL('pinnacle://app/');
+    // newPopoverWindow.loadURL('http://localhost:3000');
+
     newPopoverWindow.on('blur', () => newPopoverWindow?.hide());
     popoverWindowState.setState(newPopoverWindow);
     trayReadyState.setState(true);
