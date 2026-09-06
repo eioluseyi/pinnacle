@@ -1,4 +1,6 @@
 import path from 'node:path';
+import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
@@ -10,6 +12,7 @@ const iconPath = path.join(__dirname, 'dist/next/assets/icons/icon');
 
 export const packagerConfig = {
   asar: true,
+  prune: false,
   name: 'PinnacleDesktopClient',
   productName: 'Pinnacle Desktop Client',
   executableName: 'PinnacleDesktopClient',
@@ -26,6 +29,21 @@ export const packagerConfig = {
   //   'signature-flags': 'library',
   // },
 };
+
+export const hooks = {
+  packageAfterCopy: async (_config, buildPath) => {
+    const sourceFramework = path.join(__dirname, 'node_modules/node-syphon/dist/Frameworks/Syphon.framework');
+
+    if (!fs.existsSync(sourceFramework)) {
+      throw new Error(`node-syphon framework not found: ${sourceFramework}`);
+    }
+
+    const appFrameworksPath = path.resolve(buildPath, '../../Frameworks');
+    fs.mkdirSync(appFrameworksPath, { recursive: true });
+    execFileSync('ditto', [sourceFramework, path.join(appFrameworksPath, 'Syphon.framework')]);
+  },
+};
+
 export const rebuildConfig = {};
 export const makers = [
   // {

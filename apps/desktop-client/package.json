@@ -25,13 +25,13 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
-    "next": "^16.3.3",
     "node-syphon": "^1.0.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
     "update-electron-app": "^3.3.0"
   },
   "devDependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "next": "^16.3.3",
     "@electron-forge/cli": "^7.11.2",
     "@electron-forge/maker-deb": "^7.11.2",
     "@electron-forge/maker-dmg": "^7.11.2",
