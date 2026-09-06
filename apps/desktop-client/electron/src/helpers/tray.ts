@@ -10,6 +10,7 @@ import {
   appLifecycleState,
 } from '@/electron/src/appState';
 import { pathToFileURL } from 'node:url';
+import { getIsDev } from '@/electron/src/helpers/initialization';
 
 const __dirname = path.dirname(__filename);
 
@@ -80,7 +81,7 @@ export function initTrayApp() {
       width: 320,
       show: false,
       frame: false,
-      resizable: !false,
+      resizable: false,
       movable: false,
       alwaysOnTop: true,
       skipTaskbar: true,
@@ -100,8 +101,11 @@ export function initTrayApp() {
       return net.fetch(pathToFileURL(filePath).toString());
     });
 
-    newPopoverWindow.loadURL('pinnacle://app/');
-    // newPopoverWindow.loadURL('http://localhost:3000');
+    if (getIsDev()) {
+      newPopoverWindow.loadURL('http://localhost:3005');
+    } else {
+      newPopoverWindow.loadURL('pinnacle://app/');
+    }
 
     newPopoverWindow.on('blur', () => newPopoverWindow?.hide());
     popoverWindowState.setState(newPopoverWindow);
