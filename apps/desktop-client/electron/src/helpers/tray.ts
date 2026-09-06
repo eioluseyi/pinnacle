@@ -7,6 +7,7 @@ import {
   offscreenWindowState,
   displayState,
   trayReadyState,
+  appLifecycleState,
 } from '@/electron/src/appState';
 import { pathToFileURL } from 'node:url';
 
@@ -43,8 +44,14 @@ function togglePopover() {
   }
 
   popoverWindow.setPosition(x, y, false);
-  popoverWindow.show();
-  popoverWindow.focus();
+  // Do not focus the popover: focusing it makes macOS move the user away from
+  // their current app. showInactive keeps the tray UI visible without stealing focus.
+  popoverWindow.showInactive();
+}
+
+export function setTrayStatus(status: string) {
+  appLifecycleState.setState(status);
+  trayState.value?.setToolTip(`Pinnacle Desktop Client: ${status}`);
 }
 
 export function initTrayApp() {
@@ -65,13 +72,12 @@ export function initTrayApp() {
     newTray.setToolTip('Pinnacle Desktop Client');
     newTray.on('click', togglePopover);
     trayState.setState(newTray);
+    setTrayStatus(appLifecycleState.value);
 
     const preload = path.join(__dirname, 'preload.cjs');
     // Popover UI Setup
     const newPopoverWindow = new BrowserWindow({
-      // width: 320,
-      width: 720,
-      height: 980,
+      width: 320,
       show: false,
       frame: false,
       resizable: !false,

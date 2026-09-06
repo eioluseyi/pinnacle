@@ -17,3 +17,5 @@ export const renderServerState = createState<any>(null);
 export const renderServerHasClientState = createState(false);
 export const trayReadyState = createState(false);
 export const displayUrlState = createState<string | null>(null);
+export const scanningState = createState(false);
+export const appLifecycleState = createState('Starting');

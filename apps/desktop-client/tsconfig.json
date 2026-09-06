@@ -24,5 +24,10 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "../../packages/shared-types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "out"
   ]
 }

@@ -1,18 +1,27 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 declare global {
   interface Window {
     electronAPI?: {
       getDiscoveredServers: () => Promise<{ host: string; port: number }[]>;
+      getServerState: () => Promise<{
+        servers: { host: string; port: number }[];
+        isScanning: boolean;
+      }>;
       refreshSearch: () => Promise<{ host: string; port: number }[]>;
       onServersChanged: (callback: (servers: { host: string; port: number }[]) => void) => () => void;
+      onScanningChanged: (callback: (isScanning: boolean) => void) => () => void;
 
       setOutputStream: (url: string) => Promise<void>;
       disconnectStream: () => Promise<void>;
       getStreamStatus: () => Promise<'idle' | 'live'>;
+      getStreamUrl: () => Promise<string | null>;
       onStreamStatusChanged: (callback: (status: 'idle' | 'live') => void) => () => void;
+      onStreamUrlChanged: (callback: (url: string | null) => void) => () => void;
+      getLifecycleStatus: () => Promise<string>;
+      onLifecycleStatusChanged: (callback: (status: string) => void) => () => void;
     };
   }
 }
@@ -31,13 +40,7 @@ export default function Home() {
   const [discoveredServers, setDiscoveredServers] = useState<DiscoveredServer[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [connectedServer, setConnectedServer] = useState<DiscoveredServer | null>(null);
-  const electronApiRef = useRef<Window['electronAPI'] | null>(
-    (() => {
-      if (typeof window === 'undefined' || !window.electronAPI) return null;
-      return window.electronAPI;
-    })(),
-  );
-  const electronApi = electronApiRef.current;
+  const [lifecycleStatus, setLifecycleStatus] = useState('Starting');
 
   function formatServerUrl(server: DiscoveredServer): string {
     return `http://${server.host}:${server.port}`;
@@ -45,6 +48,7 @@ export default function Home() {
 
   async function submitUrl(nextUrl = url) {
     const trimmedUrl = nextUrl.trim();
+    const electronApi = window.electronAPI;
     if (!trimmedUrl || !electronApi) return;
 
     await electronApi.setOutputStream(trimmedUrl);
@@ -63,6 +67,7 @@ export default function Home() {
   }
 
   async function handleRefreshSearch() {
+    const electronApi = window.electronAPI;
     if (!electronApi) return;
 
     setIsScanning(true);
@@ -79,6 +84,7 @@ export default function Home() {
     setUrl('');
     setConnectedServer(null);
 
+    const electronApi = window.electronAPI;
     if (electronApi) {
       await electronApi.disconnectStream();
     }
@@ -91,30 +97,57 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (!electronApi) return;
+    if (typeof window === 'undefined' || !window.electronAPI) return;
+
+    const electronApi = window.electronAPI;
 
     let mounted = true;
 
-    electronApi.getDiscoveredServers().then((servers) => {
-      if (mounted) setDiscoveredServers(servers);
+    electronApi.getServerState().then((state) => {
+      if (!mounted) return;
+      setDiscoveredServers(state.servers);
+      setIsScanning(state.isScanning);
     });
 
     electronApi.getStreamStatus().then((status) => {
       if (mounted) setSyphonStatus(status);
     });
 
+    electronApi.getStreamUrl().then((streamUrl) => {
+      if (mounted) setUrl(streamUrl ?? '');
+    });
+
+    electronApi.getLifecycleStatus().then((status) => {
+      if (mounted) setLifecycleStatus(status);
+    });
+
     const removeServersListener = electronApi.onServersChanged((servers) => {
       setDiscoveredServers(servers);
+    });
+
+    const removeScanningListener = electronApi.onScanningChanged((isScanning) => {
+      setIsScanning(isScanning);
     });
 
     const removeStatusListener = electronApi.onStreamStatusChanged((status) => {
       setSyphonStatus(status);
     });
 
+    const removeUrlListener = electronApi.onStreamUrlChanged((streamUrl) => {
+      setUrl(streamUrl ?? '');
+    });
+
+    const removeLifecycleListener = electronApi.onLifecycleStatusChanged((status) => {
+      setLifecycleStatus(status);
+    });
+
     return () => {
       mounted = false;
       removeServersListener();
+      removeScanningListener();
       removeStatusListener();
+      removeUrlListener();
+      removeLifecycleListener();
     };
   }, []);
 
@@ -136,6 +169,7 @@ export default function Home() {
             className={`w-2.5 h-2.5 rounded-full ${syphonStatus === 'live' ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}
           />
           <span className='font-semibold text-xs capitalize tracking-wider'>Syphon {syphonStatus}</span>
+          <span className='ml-auto text-[#aaa] text-[10px] uppercase tracking-wider'>{lifecycleStatus}</span>
         </div>
 
         {/* Discovered Servers */}
@@ -143,13 +177,6 @@ export default function Home() {
           <label className='block mb-2 font-semibold text-[#aaa] text-[10px] uppercase tracking-[0.5px]'>
             Discovered Servers
           </label>
-
-          {isScanning && (
-            <div className='bg-[#2d2d2d] mb-2 p-3 border border-[#444] rounded text-[#aaa] text-xs'>
-              <p className='mb-1'>Scanning network...</p>
-              <p className='text-[#777]'>Looking for Pinnacle streaming nodes</p>
-            </div>
-          )}
 
           <div className='space-y-1.5'>
             {discoveredServers.map((server, idx) => {
@@ -178,6 +205,13 @@ export default function Home() {
               );
             })}
           </div>
+
+          {isScanning && (
+            <div className='bg-[#2d2d2d] mt-2 p-3 border border-[#444] rounded text-[#aaa] text-xs'>
+              <p className='mb-1'>Scanning network...</p>
+              <p className='text-[#777]'>Looking for Pinnacle streaming nodes</p>
+            </div>
+          )}
         </div>
       </div>
 

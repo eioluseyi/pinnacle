@@ -2,7 +2,7 @@ import util from 'node:util';
 import child_process from 'node:child_process';
 import { getLocalIpAddress } from '@pinnacle/utils';
 
-import { cacheNetworkIPs, displayUrlState, networkIPs, pinnacleServers } from '@/electron/src/appState';
+import { cacheNetworkIPs, displayUrlState, networkIPs, pinnacleServers, scanningState } from '@/electron/src/appState';
 import { getActiveBroadcastAddress, pingBroadcast } from '@/electron/src/helpers/network';
 import { logError, logger } from '@/electron/src/helpers/logger';
 
@@ -93,13 +93,26 @@ const getPinnacleServers = async () => {
 };
 
 export const scan = async () => {
+  if (scanningState.value) return pinnacleServers.value;
+
+  scanningState.setState(true);
+
   try {
     const servers = await getPinnacleServers();
     pinnacleServers.setState(servers);
+
+    // The completed scan determines the initial render target. Later server-list
+    // updates must not unexpectedly replace a user's selected output.
+    if (!displayUrlState.value && servers[0]) {
+      displayUrlState.setState(getUrl(servers[0]));
+    }
+
     return servers;
   } catch (error) {
     logError('Failed to scan for Pinnacle servers', error);
     return [];
+  } finally {
+    scanningState.setState(false);
   }
 };
 
@@ -107,7 +120,6 @@ const getUrl = ({ host, port }: { host: string; port: number }) => `http://${hos
 
 export const initScan = async () => {
   pinnacleServers.subscribe((newState) => {
-    displayUrlState.setState(getUrl(newState[0]));
     logger.info('Pinnacle Servers state updated — Pinnacle servers: ', newState);
   });
 

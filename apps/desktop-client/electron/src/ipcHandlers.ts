@@ -1,7 +1,13 @@
 import { app, BrowserWindow, ipcMain } from 'electron/main';
 import os from 'node:os';
 
-import { displayUrlState, pinnacleServers, renderServerHasClientState } from '@/electron/src/appState';
+import {
+  appLifecycleState,
+  displayUrlState,
+  pinnacleServers,
+  renderServerHasClientState,
+  scanningState,
+} from '@/electron/src/appState';
 import { scan } from '@/electron/src/helpers/discovery';
 import { logError } from '@/electron/src/helpers/logger';
 
@@ -19,12 +25,15 @@ const broadcast = (channel: string, ...args: unknown[]) => {
 
 export const initIpcHandlers = () => {
   ipcMain.handle('servers:get', () => pinnacleServers.value);
+  ipcMain.handle('servers:get-state', () => ({ servers: pinnacleServers.value, isScanning: scanningState.value }));
 
   ipcMain.handle('servers:scan', async () => {
     const servers = await scan();
     broadcast('servers:changed', servers);
     return servers;
   });
+
+  ipcMain.handle('app:get-lifecycle', () => appLifecycleState.value);
 
   ipcMain.handle('stream:set-url', (_event, url: string) => {
     const trimmedUrl = url.trim();
@@ -44,13 +53,26 @@ export const initIpcHandlers = () => {
   });
 
   ipcMain.handle('stream:get-status', () => getStreamStatus());
+  ipcMain.handle('stream:get-url', () => displayUrlState.value);
 
   pinnacleServers.subscribe((servers) => {
     broadcast('servers:changed', servers);
   });
 
+  scanningState.subscribe((isScanning) => {
+    broadcast('servers:scanning-changed', isScanning);
+  });
+
+  displayUrlState.subscribe((url) => {
+    broadcast('stream:url-changed', url);
+  });
+
   renderServerHasClientState.subscribe(() => {
     broadcast('stream:status-changed', getStreamStatus());
+  });
+
+  appLifecycleState.subscribe((status) => {
+    broadcast('app:lifecycle-changed', status);
   });
 
   ipcMain.handle('app:getVersion', () => app.getVersion());

@@ -2,6 +2,7 @@ import {
   displayState,
   displayUrlState,
   offscreenWindowState,
+  appLifecycleState,
   renderServerHasClientState,
   renderServerState,
 } from '@/electron/src/appState';
@@ -50,7 +51,7 @@ const handlePaintEvent = (image: Electron.NativeImage) => {
 
 const getRenderServer = () => {
   if (process.platform === 'darwin') {
-    return new SyphonOpenGLServer('Pinnacle');
+    return new SyphonOpenGLServer('');
   }
   return null; // For Windows, you would return your Spout server instance here
 };
@@ -106,8 +107,9 @@ const publish = (display: typeof displayState.value) => {
 const initRenderer = () => {
   setInterval(() => {
     publish(displayState.value);
-    const serverHasClient = renderServerState.value.hasClient;
+    const serverHasClient = Boolean(renderServerState.value?.hasClient);
     renderServerHasClientState.setState(serverHasClient);
+    appLifecycleState.setState(serverHasClient ? 'Live' : displayUrlState.value ? 'Ready' : 'Idle');
   }, 1000 / 60); // 60 FPS
 };
 
