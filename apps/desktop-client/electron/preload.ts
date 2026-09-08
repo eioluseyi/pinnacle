@@ -9,6 +9,11 @@ type ServerState = {
   isScanning: boolean;
 };
 
+type DisplayFrame = {
+  buffer: Uint8ClampedArray;
+  size: { width: number; height: number };
+};
+
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { contextBridge, ipcRenderer } = require('electron');
 
@@ -67,5 +72,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const listener = (_event: Electron.IpcRendererEvent, status: string) => callback(status);
     ipcRenderer.on('app:lifecycle-changed', listener);
     return () => ipcRenderer.removeListener('app:lifecycle-changed', listener);
+  },
+
+  onDisplayFrame: (callback: (frame: DisplayFrame) => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, frame: DisplayFrame) => callback(frame);
+    ipcRenderer.on('display:frame', listener);
+    return () => ipcRenderer.removeListener('display:frame', listener);
   },
 });

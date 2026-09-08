@@ -2,6 +2,7 @@ import {
   displayState,
   displayUrlState,
   offscreenWindowState,
+  popoverWindowState,
   appLifecycleState,
   renderServerHasClientState,
   renderServerState,
@@ -81,12 +82,20 @@ const initBrowserBuffer = () => {
   newOffscreenWindow.loadURL(displayUrlState.value || FALLBACK_URL);
 };
 
+const broadcastFrame = (display: typeof displayState.value) => {
+  const previewWindow = popoverWindowState.value;
+  if (!display || !previewWindow || previewWindow.isDestroyed()) return;
+
+  previewWindow.webContents.send('display:frame', display);
+};
+
 const publish = (display: typeof displayState.value) => {
   const renderServer = renderServerState.value;
 
   // Send to render server
   if (!renderServer || !display) return;
 
+  broadcastFrame(display); // To mirror the display in the popover window
   renderServer.publishImageData(
     display.buffer,
 

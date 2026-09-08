@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
@@ -22,6 +22,9 @@ declare global {
       onStreamUrlChanged: (callback: (url: string | null) => void) => () => void;
       getLifecycleStatus: () => Promise<string>;
       onLifecycleStatusChanged: (callback: (status: string) => void) => () => void;
+      onDisplayFrame: (
+        callback: (frame: { buffer: Uint8ClampedArray; size: { width: number; height: number } }) => void,
+      ) => () => void;
     };
   }
 }
@@ -35,6 +38,7 @@ interface DiscoveredServer {
 type SyphonStatus = 'idle' | 'live';
 
 export default function Home() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [url, setUrl] = useState('');
   const [syphonStatus, setSyphonStatus] = useState<SyphonStatus>('idle');
   const [discoveredServers, setDiscoveredServers] = useState<DiscoveredServer[]>([]);
@@ -141,6 +145,23 @@ export default function Home() {
       setLifecycleStatus(status);
     });
 
+    const removeDisplayFrameListener = electronApi.onDisplayFrame((frame) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      if (canvas.width !== frame.size.width || canvas.height !== frame.size.height) {
+        canvas.width = frame.size.width;
+        canvas.height = frame.size.height;
+      }
+
+      const context = canvas.getContext('2d');
+      if (!context) return;
+
+      const pixelData = new Uint8ClampedArray(frame.buffer.length);
+      pixelData.set(frame.buffer);
+      context.putImageData(new ImageData(pixelData, frame.size.width, frame.size.height), 0, 0);
+    });
+
     return () => {
       mounted = false;
       removeServersListener();
@@ -148,6 +169,7 @@ export default function Home() {
       removeStatusListener();
       removeUrlListener();
       removeLifecycleListener();
+      removeDisplayFrameListener();
     };
   }, []);
 
@@ -158,7 +180,7 @@ export default function Home() {
         <div className='mb-4'>
           <h1 className='flex items-center gap-1 mb-1 font-semibold text-md'>
             <img src='/icon.png' alt='Pinnacle' className='h-5' />
-            <span>Pinnacle Desktop Client</span>
+            <span>Pinnacle client</span>
           </h1>
           {/* <p className='text-[#aaa] text-xs'>AV Streaming & Screen Distribution Utility</p> */}
         </div>
@@ -171,6 +193,8 @@ export default function Home() {
           <span className='font-semibold text-xs capitalize tracking-wider'>Syphon {syphonStatus}</span>
           <span className='ml-auto text-[#aaa] text-[10px] uppercase tracking-wider'>{lifecycleStatus}</span>
         </div>
+
+        <canvas ref={canvasRef} className='block bg-[#2d2d2d] mb-4 border border-[#444] rounded w-full aspect-video' />
 
         {/* Discovered Servers */}
         <div className='mb-4'>
