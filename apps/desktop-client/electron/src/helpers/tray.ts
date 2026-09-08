@@ -45,9 +45,8 @@ function togglePopover() {
   }
 
   popoverWindow.setPosition(x, y, false);
-  // Do not focus the popover: focusing it makes macOS move the user away from
-  // their current app. showInactive keeps the tray UI visible without stealing focus.
-  popoverWindow.showInactive();
+  popoverWindow.show();
+  popoverWindow.focus();
 }
 
 export function setTrayStatus(status: string) {
@@ -84,8 +83,10 @@ export function initTrayApp() {
       width: 320,
       show: false,
       frame: false,
+      type: 'panel',
       resizable: false,
       movable: false,
+      fullscreenable: false,
       alwaysOnTop: true,
       skipTaskbar: true,
       webPreferences: {
@@ -95,6 +96,11 @@ export function initTrayApp() {
         sandbox: false,
       },
     });
+
+    if (process.platform === 'darwin') {
+      newPopoverWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+      newPopoverWindow.setAlwaysOnTop(true, 'pop-up-menu');
+    }
 
     protocol.handle('pinnacle', (request) => {
       const requestUrl = new URL(request.url);
