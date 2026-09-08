@@ -1,6 +1,6 @@
 {
   "name": "@pinnacle/desktop-client",
-  "productName": "Pinnacle Desktop Client",
+  "productName": "Pinnacle client",
   "description": "Client app to make Pinnacle app use smoother",
   "version": "1.0.0",
   "private": true,

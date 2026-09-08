@@ -51,8 +51,10 @@ function togglePopover() {
 }
 
 export function setTrayStatus(status: string) {
-  appLifecycleState.setState(status);
-  trayState.value?.setToolTip(`Pinnacle Desktop Client: ${status}`);
+  const tray = trayState.value;
+  if (!tray) return;
+
+  tray.setTitle(` ${status}`);
 }
 
 export function initTrayApp() {
@@ -70,9 +72,10 @@ export function initTrayApp() {
 
     const icon = nativeImage.createFromPath(iconPath);
     const newTray = new Tray(icon);
-    newTray.setToolTip('Pinnacle Desktop Client');
+    newTray.setToolTip('Pinnacle client');
     newTray.on('click', togglePopover);
     trayState.setState(newTray);
+    appLifecycleState.subscribe(setTrayStatus);
     setTrayStatus(appLifecycleState.value);
 
     const preload = path.join(__dirname, 'preload.cjs');

@@ -116,7 +116,7 @@ export const scan = async () => {
   }
 };
 
-const getUrl = ({ host, port }: { host: string; port: number }) => `http://${host}:${port}`;
+export const getUrl = ({ host, port }: { host: string; port: number }) => `http://${host}:${port}`;
 
 export const initScan = async () => {
   pinnacleServers.subscribe((newState) => {
