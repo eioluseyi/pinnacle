@@ -120,9 +120,9 @@ const initRenderer = () => {
     publish(displayState.value);
     const serverHasClients = Boolean(renderServerState.value?.hasClients);
     const status = (() => {
-      if (scanningState.value) return AppLifecycleStatus.Searching;
-      if (!pinnacleServers.value.length) return AppLifecycleStatus.Idle;
       if (serverHasClients && displayUrlState.value) return AppLifecycleStatus.Live;
+      if (scanningState.value) return AppLifecycleStatus.Searching;
+      if (!pinnacleServers.value.length || !displayUrlState.value) return AppLifecycleStatus.Idle;
       return AppLifecycleStatus.Ready;
     })();
 
