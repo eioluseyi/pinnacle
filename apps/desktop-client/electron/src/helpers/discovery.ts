@@ -99,6 +99,7 @@ export const scan = async () => {
   try {
     const servers = await getPinnacleServers();
     pinnacleServers.setState(servers);
+    return servers;
   } catch (error) {
     logError('Failed to scan for Pinnacle servers', error);
     return [];

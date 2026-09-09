@@ -40,8 +40,8 @@ export default function Home() {
   const [url, setUrl] = useState('');
   const [discoveredServers, setDiscoveredServers] = useState<DiscoveredServer[]>([]);
   const [isScanning, setIsScanning] = useState(false);
-  const [connectedServer, setConnectedServer] = useState<DiscoveredServer | null>(null);
   const [lifecycleStatus, setLifecycleStatus] = useState('Starting');
+  const connectedServer = discoveredServers.find((server) => formatServerUrl(server) === url) ?? null;
 
   function formatServerUrl(server: DiscoveredServer): string {
     return `http://${server.host}:${server.port}`;
@@ -53,17 +53,10 @@ export default function Home() {
     if (!trimmedUrl || !electronApi) return;
 
     await electronApi.setOutputStream(trimmedUrl);
-    const normalizedUrl = /^https?:\/\//i.test(trimmedUrl) ? trimmedUrl : `http://${trimmedUrl}`;
-    const matched = discoveredServers.find((server) => formatServerUrl(server) === normalizedUrl);
-
-    if (matched) {
-      setConnectedServer(matched);
-    }
   }
 
   function handleServerClick(server: DiscoveredServer) {
     const serverUrl = formatServerUrl(server);
-    setUrl(serverUrl);
     submitUrl(serverUrl);
   }
 
@@ -82,9 +75,6 @@ export default function Home() {
   }
 
   async function handleDisconnect() {
-    setUrl('');
-    setConnectedServer(null);
-
     const electronApi = window.electronAPI;
     if (electronApi) {
       await electronApi.disconnectStream();
