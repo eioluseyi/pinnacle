@@ -13,9 +13,9 @@ const iconPath = path.join(__dirname, 'dist/next/assets/icons/icon');
 export const packagerConfig = {
   asar: true,
   prune: false,
-  name: 'PinnacleDesktopClient',
-  productName: 'Pinnacle Desktop Client',
-  executableName: 'PinnacleDesktopClient',
+  name: 'Pinnacle client',
+  productName: 'Pinnacle client',
+  executableName: 'Pinnacle client',
   icon: iconPath,
   extraResource: ['dist'],
 
