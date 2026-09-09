@@ -10,7 +10,6 @@ import {
   appLifecycleState,
 } from '@/electron/src/appState';
 import { pathToFileURL } from 'node:url';
-import { getIsDev } from '@/electron/src/helpers/initialization';
 
 const __dirname = path.dirname(__filename);
 
@@ -110,7 +109,7 @@ export function initTrayApp() {
       return net.fetch(pathToFileURL(filePath).toString());
     });
 
-    if (getIsDev()) {
+    if (!app.isPackaged) {
       newPopoverWindow.loadURL('http://localhost:3005');
     } else {
       newPopoverWindow.loadURL('pinnacle://app/');

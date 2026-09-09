@@ -9,15 +9,14 @@ import {
   scanningState,
   AppLifecycleStatus,
 } from '@/electron/src/appState';
-import { getIsDev } from '@/electron/src/helpers/initialization';
 import { logError } from '@/electron/src/helpers/logger';
-import { BrowserWindow } from 'electron/main';
+import { app, BrowserWindow } from 'electron/main';
 // node-syphon does not currently ship TypeScript declarations.
 // @ts-expect-error Module has no declaration file.
 import { SyphonOpenGLServer } from 'node-syphon';
 
 const FALLBACK_URL = (() => {
-  if (getIsDev()) return 'http://localhost:3005/blank';
+  if (!app.isPackaged) return 'http://localhost:3005/blank';
   return 'pinnacle://app/blank';
 })();
 

@@ -3,9 +3,6 @@ import { bindProcessGuards, logError } from '@/electron/src/helpers/logger';
 import { initDisplay } from '@/electron/src/helpers/renderServer';
 import { initTrayApp } from '@/electron/src/helpers/tray';
 import { initSentry } from '@/electron/src/lib/sentry';
-import { app } from 'electron/main';
-
-export const getIsDev = () => !app.isPackaged;
 
 export function initErrorListeners() {
   try {
