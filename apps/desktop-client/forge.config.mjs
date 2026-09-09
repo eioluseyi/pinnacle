@@ -7,6 +7,27 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const workspaceEnvPath = path.resolve(__dirname, '../../.env');
+if (fs.existsSync(workspaceEnvPath)) {
+  process.loadEnvFile(workspaceEnvPath);
+}
+
+const entitlementsPath = path.resolve(__dirname, 'entitlements.plist');
+const requestedSigningIdentity = process.env.APPLE_SIGNING_IDENTITY?.trim();
+let signingIdentity;
+
+if (requestedSigningIdentity) {
+  const availableSigningIdentities = execFileSync('security', ['find-identity', '-v', '-p', 'codesigning'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+
+  if (availableSigningIdentities.includes(requestedSigningIdentity)) {
+    signingIdentity = requestedSigningIdentity;
+  } else {
+    console.warn('APPLE_SIGNING_IDENTITY is not installed as a valid macOS signing identity; building unsigned.');
+  }
+}
 
 const iconPath = path.join(__dirname, 'dist/next/assets/icons/icon');
 
@@ -19,15 +40,17 @@ export const packagerConfig = {
   icon: iconPath,
   extraResource: ['dist'],
 
-  // Uncomment if you have Apple Developer Account credentials
-  // Code Signing for macOS (Required for Gatekeeper on modern macOS)
-  osxSign: {
-    identity: process.env.APPLE_SIGNING_IDENTITY || undefined, // e.g. "Developer ID Application: Your Name (TEAM_ID)"
-    'hardened-runtime': true,
-    entitlements: 'entitlements.plist',
-    'entitlements-inherit': 'entitlements.plist',
-    'signature-flags': 'library',
-  },
+  ...(signingIdentity
+    ? {
+        osxSign: {
+          identity: signingIdentity,
+          'hardened-runtime': true,
+          entitlements: entitlementsPath,
+          'entitlements-inherit': entitlementsPath,
+          'signature-flags': 'library',
+        },
+      }
+    : {}),
 };
 
 export const hooks = {
