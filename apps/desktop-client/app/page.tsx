@@ -16,9 +16,7 @@ declare global {
 
       setOutputStream: (url: string) => Promise<void>;
       disconnectStream: () => Promise<void>;
-      getStreamStatus: () => Promise<'idle' | 'live'>;
       getStreamUrl: () => Promise<string | null>;
-      onStreamStatusChanged: (callback: (status: 'idle' | 'live') => void) => () => void;
       onStreamUrlChanged: (callback: (url: string | null) => void) => () => void;
       getLifecycleStatus: () => Promise<string>;
       onLifecycleStatusChanged: (callback: (status: string) => void) => () => void;
@@ -40,7 +38,6 @@ type SyphonStatus = 'idle' | 'live';
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [url, setUrl] = useState('');
-  const [syphonStatus, setSyphonStatus] = useState<SyphonStatus>('idle');
   const [discoveredServers, setDiscoveredServers] = useState<DiscoveredServer[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [connectedServer, setConnectedServer] = useState<DiscoveredServer | null>(null);
@@ -113,10 +110,6 @@ export default function Home() {
       setIsScanning(state.isScanning);
     });
 
-    electronApi.getStreamStatus().then((status) => {
-      if (mounted) setSyphonStatus(status);
-    });
-
     electronApi.getStreamUrl().then((streamUrl) => {
       if (mounted) setUrl(streamUrl ?? '');
     });
@@ -131,10 +124,6 @@ export default function Home() {
 
     const removeScanningListener = electronApi.onScanningChanged((isScanning) => {
       setIsScanning(isScanning);
-    });
-
-    const removeStatusListener = electronApi.onStreamStatusChanged((status) => {
-      setSyphonStatus(status);
     });
 
     const removeUrlListener = electronApi.onStreamUrlChanged((streamUrl) => {
@@ -166,7 +155,6 @@ export default function Home() {
       mounted = false;
       removeServersListener();
       removeScanningListener();
-      removeStatusListener();
       removeUrlListener();
       removeLifecycleListener();
       removeDisplayFrameListener();
@@ -187,11 +175,10 @@ export default function Home() {
 
         {/* Syphon Status Bar */}
         <div className='flex items-center gap-2 mb-4 pb-3 border-[#444] border-b'>
-          <div
+          {/* <div
             className={`w-2.5 h-2.5 rounded-full ${syphonStatus === 'live' ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}
-          />
-          <span className='font-semibold text-xs capitalize tracking-wider'>Syphon {syphonStatus}</span>
-          <span className='ml-auto text-[#aaa] text-[10px] uppercase tracking-wider'>{lifecycleStatus}</span>
+          /> */}
+          <span className='font-semibold text-xs tracking-wider'>{lifecycleStatus}</span>
         </div>
 
         <canvas ref={canvasRef} className='block bg-[#2d2d2d] mb-4 border border-[#444] rounded w-full aspect-video' />

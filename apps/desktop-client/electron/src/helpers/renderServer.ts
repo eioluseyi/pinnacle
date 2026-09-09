@@ -3,17 +3,19 @@ import {
   displayUrlState,
   offscreenWindowState,
   popoverWindowState,
+  pinnacleServers,
   appLifecycleState,
-  renderServerHasClientState,
   renderServerState,
+  scanningState,
+  AppLifecycleStatus,
 } from '@/electron/src/appState';
-import { logError, logger } from '@/electron/src/helpers/logger';
+import { logError } from '@/electron/src/helpers/logger';
 import { BrowserWindow } from 'electron/main';
 // node-syphon does not currently ship TypeScript declarations.
 // @ts-expect-error Module has no declaration file.
 import { SyphonOpenGLServer } from 'node-syphon';
 
-const FALLBACK_URL = 'about:blank'; // Todo: Use custom blank page (Pinnacle Splash Screen)
+const FALLBACK_URL = 'http://localhost:3005'; // Todo: Use app:// | Use custom blank page (Pinnacle Splash Screen)
 
 const handlePaintEvent = (image: Electron.NativeImage) => {
   try {
@@ -52,7 +54,7 @@ const handlePaintEvent = (image: Electron.NativeImage) => {
 
 const getRenderServer = () => {
   if (process.platform === 'darwin') {
-    return new SyphonOpenGLServer('');
+    return new SyphonOpenGLServer('Live Stream');
   }
   return null; // For Windows, you would return your Spout server instance here
 };
@@ -116,17 +118,19 @@ const publish = (display: typeof displayState.value) => {
 const initRenderer = () => {
   setInterval(() => {
     publish(displayState.value);
-    const serverHasClient = Boolean(renderServerState.value?.hasClient);
-    renderServerHasClientState.setState(serverHasClient);
-    appLifecycleState.setState(serverHasClient ? 'Live' : displayUrlState.value ? 'Ready' : 'Idle');
+    const serverHasClients = Boolean(renderServerState.value?.hasClients);
+    const status = (() => {
+      if (scanningState.value) return AppLifecycleStatus.Searching;
+      if (!pinnacleServers.value.length) return AppLifecycleStatus.Idle;
+      if (serverHasClients && displayUrlState.value) return AppLifecycleStatus.Live;
+      return AppLifecycleStatus.Ready;
+    })();
+
+    appLifecycleState.setState(status);
   }, 1000 / 60); // 60 FPS
 };
 
 export const initDisplay = async () => {
-  renderServerState.subscribe((server) => {
-    if (!server) return logger.info('Render server stopped');
-    logger.info('Render server started');
-  });
   const renderServer = getRenderServer();
   renderServerState.setState(renderServer);
   displayState.subscribe(publish);

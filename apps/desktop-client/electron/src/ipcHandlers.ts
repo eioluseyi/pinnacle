@@ -1,19 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron/main';
 import os from 'node:os';
 
-import {
-  appLifecycleState,
-  displayUrlState,
-  pinnacleServers,
-  renderServerHasClientState,
-  scanningState,
-} from '@/electron/src/appState';
+import { appLifecycleState, displayUrlState, pinnacleServers, scanningState } from '@/electron/src/appState';
 import { scan } from '@/electron/src/helpers/discovery';
 import { logError } from '@/electron/src/helpers/logger';
-
-type StreamStatus = 'idle' | 'live';
-
-const getStreamStatus = (): StreamStatus => (renderServerHasClientState.value ? 'live' : 'idle');
 
 const broadcast = (channel: string, ...args: unknown[]) => {
   BrowserWindow.getAllWindows().forEach((window) => {
@@ -52,7 +42,6 @@ export const initIpcHandlers = () => {
     displayUrlState.setState(null);
   });
 
-  ipcMain.handle('stream:get-status', () => getStreamStatus());
   ipcMain.handle('stream:get-url', () => displayUrlState.value);
 
   pinnacleServers.subscribe((servers) => {
@@ -65,10 +54,6 @@ export const initIpcHandlers = () => {
 
   displayUrlState.subscribe((url) => {
     broadcast('stream:url-changed', url);
-  });
-
-  renderServerHasClientState.subscribe(() => {
-    broadcast('stream:status-changed', getStreamStatus());
   });
 
   appLifecycleState.subscribe((status) => {
