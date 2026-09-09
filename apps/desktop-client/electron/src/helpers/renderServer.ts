@@ -81,10 +81,11 @@ const initBrowserBuffer = () => {
 
   displayUrlState.subscribe((newUrl) => {
     const url = newUrl || FALLBACK_URL;
-    newOffscreenWindow.loadURL(url); // Load the specified URL or leave blank
+    newOffscreenWindow.loadURL(url);
   });
 
-  newOffscreenWindow.loadURL(displayUrlState.value || FALLBACK_URL);
+  const url = displayUrlState.value || FALLBACK_URL;
+  newOffscreenWindow.loadURL(url);
 };
 
 const broadcastFrame = (display: typeof displayState.value) => {

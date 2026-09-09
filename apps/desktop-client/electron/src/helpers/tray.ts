@@ -104,7 +104,11 @@ export function initTrayApp() {
     protocol.handle('pinnacle', (request) => {
       const requestUrl = new URL(request.url);
       const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\/+/, '');
-      const filePath = path.join(__dirname, '../next', relativePath || 'index.html');
+      const filePath = path.join(
+        __dirname,
+        '../next',
+        relativePath && path.extname(relativePath) ? relativePath : `${relativePath || 'index'}/index.html`,
+      );
 
       return net.fetch(pathToFileURL(filePath).toString());
     });
