@@ -116,7 +116,7 @@ export function initTrayApp() {
     if (!app.isPackaged) {
       newPopoverWindow.loadURL('http://localhost:3005');
     } else {
-    newPopoverWindow.loadURL('pinnacle://app/');
+      newPopoverWindow.loadURL('pinnacle://app/');
     }
 
     newPopoverWindow.on('blur', () => newPopoverWindow?.hide());

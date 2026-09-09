@@ -8,12 +8,15 @@ import {
   renderServerState,
   scanningState,
   AppLifecycleStatus,
+  trayState,
 } from '@/electron/src/appState';
 import { logError } from '@/electron/src/helpers/logger';
+import { nativeImage } from 'electron';
 import { app, BrowserWindow } from 'electron/main';
 // node-syphon does not currently ship TypeScript declarations.
 // @ts-expect-error Module has no declaration file.
 import { SyphonOpenGLServer } from 'node-syphon';
+import path from 'node:path';
 
 const FALLBACK_URL = (() => {
   if (!app.isPackaged) return 'http://localhost:3005/blank';
@@ -119,17 +122,43 @@ const publish = (display: typeof displayState.value) => {
   );
 };
 
+const setStatusIcon = (status: AppLifecycleStatus) => {
+  const tray = trayState.value;
+  if (!tray) return;
+
+  let iconPath = '';
+  switch (status) {
+    case AppLifecycleStatus.Scanning:
+      iconPath = path.join(__dirname, '../electron/assets/icon.png');
+      break;
+    case AppLifecycleStatus.Idle:
+      iconPath = path.join(__dirname, '../electron/assets/icon-red.png');
+      break;
+    case AppLifecycleStatus.Live:
+      iconPath = path.join(__dirname, '../electron/assets/icon-green.png');
+      break;
+    case AppLifecycleStatus.Ready:
+      iconPath = path.join(__dirname, '../electron/assets/icon-grey.png');
+      break;
+    default:
+      iconPath = path.join(__dirname, '../electron/assets/icon.png');
+  }
+  const icon = nativeImage.createFromPath(iconPath);
+  tray.setImage(icon);
+};
+
 const initRenderer = () => {
   setInterval(() => {
     publish(displayState.value);
     const serverHasClients = Boolean(renderServerState.value?.hasClients);
     const status = (() => {
       if (serverHasClients && displayUrlState.value) return AppLifecycleStatus.Live;
-      if (scanningState.value) return AppLifecycleStatus.Searching;
+      if (scanningState.value) return AppLifecycleStatus.Scanning;
       if (!pinnacleServers.value.length || !displayUrlState.value) return AppLifecycleStatus.Idle;
       return AppLifecycleStatus.Ready;
     })();
 
+    setStatusIcon(status);
     appLifecycleState.setState(status);
   }, 1000 / 60); // 60 FPS
 };

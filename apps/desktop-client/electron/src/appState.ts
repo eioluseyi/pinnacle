@@ -18,9 +18,9 @@ export const trayReadyState = createState(false);
 export const displayUrlState = createState<string | null>(null);
 export const scanningState = createState(false);
 export enum AppLifecycleStatus {
-  Searching = '🟠 Searching...',
-  Idle = '🔴 Idle',
-  Live = '🟢 Live',
-  Ready = '⚪️ Ready',
+  Scanning = 'Scanning...',
+  Idle = 'Idle',
+  Live = 'Live',
+  Ready = 'Ready',
 }
 export const appLifecycleState = createState<AppLifecycleStatus>(AppLifecycleStatus.Idle);

@@ -157,7 +157,7 @@ export default function Home() {
         {/* Header */}
         <div className='mb-4'>
           <h1 className='flex items-center gap-1 mb-1 font-semibold text-md'>
-            <img src='/icon.png' alt='Pinnacle' className='h-5' />
+            <img src='/assets/icons/icon.png' alt='Pinnacle' className='h-5' />
             <span>Pinnacle client</span>
           </h1>
           {/* <p className='text-[#aaa] text-xs'>AV Streaming & Screen Distribution Utility</p> */}
