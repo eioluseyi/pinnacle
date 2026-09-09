@@ -21,13 +21,13 @@ export const packagerConfig = {
 
   // Uncomment if you have Apple Developer Account credentials
   // Code Signing for macOS (Required for Gatekeeper on modern macOS)
-  // osxSign: {
-  //   identity: process.env.APPLE_SIGNING_IDENTITY || undefined, // e.g. "Developer ID Application: Your Name (TEAM_ID)"
-  //   'hardened-runtime': true,
-  //   entitlements: 'entitlements.plist',
-  //   'entitlements-inherit': 'entitlements.plist',
-  //   'signature-flags': 'library',
-  // },
+  osxSign: {
+    identity: process.env.APPLE_SIGNING_IDENTITY || undefined, // e.g. "Developer ID Application: Your Name (TEAM_ID)"
+    'hardened-runtime': true,
+    entitlements: 'entitlements.plist',
+    'entitlements-inherit': 'entitlements.plist',
+    'signature-flags': 'library',
+  },
 };
 
 export const hooks = {
