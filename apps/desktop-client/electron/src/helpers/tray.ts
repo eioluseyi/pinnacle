@@ -104,19 +104,19 @@ export function initTrayApp() {
     protocol.handle('pinnacle', (request) => {
       const requestUrl = new URL(request.url);
       const relativePath = decodeURIComponent(requestUrl.pathname).replace(/^\/+/, '');
-      const filePath = path.join(
-        __dirname,
-        '../next',
-        relativePath && path.extname(relativePath) ? relativePath : `${relativePath || 'index'}/index.html`,
-      );
-
+      const resourcePath = path.extname(relativePath)
+        ? relativePath
+        : relativePath
+          ? path.join(relativePath, 'index.html')
+          : 'index.html';
+      const filePath = path.join(__dirname, '../next', resourcePath);
       return net.fetch(pathToFileURL(filePath).toString());
     });
 
     if (!app.isPackaged) {
       newPopoverWindow.loadURL('http://localhost:3005');
     } else {
-      newPopoverWindow.loadURL('pinnacle://app/');
+    newPopoverWindow.loadURL('pinnacle://app/');
     }
 
     newPopoverWindow.on('blur', () => newPopoverWindow?.hide());
