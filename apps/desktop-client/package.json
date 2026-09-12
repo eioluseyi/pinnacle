@@ -2,7 +2,7 @@
   "name": "@pinnacle/desktop-client",
   "productName": "Pinnacle client",
   "description": "Client app to make Pinnacle app use smoother",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "main": "dist/electron/main.cjs",
   "type": "module",
@@ -35,9 +35,6 @@
     "update-electron-app": "^3.3.0"
   },
   "devDependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "next": "^16.3.3",
     "@electron-forge/cli": "^7.11.2",
     "@electron-forge/maker-deb": "^7.11.2",
     "@electron-forge/maker-dmg": "^7.11.2",
@@ -55,6 +52,9 @@
     "@types/react-dom": "^19.2.5",
     "electron": "^43.1.0",
     "esbuild": "^0.20.0",
+    "next": "^16.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3"
   },
   "author": "Emmanuel (EIO) Imolorhe | @eioluseyi <eioluseyi@gmail.com> (https://eioluseyi.com)",
