@@ -14,6 +14,14 @@ if (fs.existsSync(workspaceEnvPath)) {
 
 const entitlementsPath = path.resolve(__dirname, 'entitlements.plist');
 const requestedSigningIdentity = process.env.APPLE_SIGNING_IDENTITY?.trim();
+const notarizeCredentials =
+  process.env.APPLE_ID && process.env.APPLE_PASSWORD && process.env.APPLE_TEAM_ID
+    ? {
+        appleId: process.env.APPLE_ID,
+        appleIdPassword: process.env.APPLE_PASSWORD,
+        teamId: process.env.APPLE_TEAM_ID,
+      }
+    : undefined;
 let signingIdentity;
 
 if (requestedSigningIdentity && process.platform === 'darwin') {
@@ -49,6 +57,7 @@ export const packagerConfig = {
           signatureFlags: 'library',
           continueOnError: false,
         },
+        ...(notarizeCredentials ? { osxNotarize: notarizeCredentials } : {}),
       }
     : {}),
 };
