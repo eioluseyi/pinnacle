@@ -3,7 +3,7 @@
   "productName": "Pinnacle client",
   "description": "Client app to make Pinnacle app use smoother",
   "version": "1.0.2",
-  "private": true,
+  "private": false,
   "main": "dist/electron/main.cjs",
   "type": "module",
   "repository": {
