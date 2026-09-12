@@ -96,6 +96,7 @@ export const publishers = [
   {
     name: '@electron-forge/publisher-github',
     config: {
+      tagPrefix: 'desktop-v',
       repository: {
         owner: 'eioluseyi',
         name: 'pinnacle',
