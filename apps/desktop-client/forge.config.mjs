@@ -78,19 +78,19 @@ export const makers = [
   //   },
   // },
   // macOS: DMG (Preferred for direct distribution)
-  // {
-  //   name: '@electron-forge/maker-dmg',
-  //   config: {
-  //     name: 'Pinnacle',
-  //     icon: path.join(__dirname, 'dist/next/assets/icons/icon.icns'),
-  //     format: 'ULFO',
-  //   },
-  // },
-  // macOS: ZIP (Required for auto-updates)
   {
-    name: '@electron-forge/maker-zip',
-    platforms: ['darwin'],
+    name: '@electron-forge/maker-dmg',
+    config: {
+      name: 'Pinnacle',
+      icon: path.join(__dirname, 'dist/next/assets/icons/icon.icns'),
+      format: 'ULFO',
+    },
   },
+  // macOS: ZIP (Required for auto-updates)
+  // {
+  //   name: '@electron-forge/maker-zip',
+  //   platforms: ['darwin'],
+  // },
   // {
   //   name: '@electron-forge/maker-deb',
   //   platforms: ['linux'],
