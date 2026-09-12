@@ -65,14 +65,13 @@ jobs:
       - name: Typecheck TypeScript
         run: yarn typecheck
 
-      # 4. macOS Specific: Setup Code Signing (Optional)
-      # Uncomment if you add Apple Developer credentials to GitHub Repository Secrets
-      # - name: Apple Code Signing Setup
-      #   if: matrix.platform == 'darwin' && secrets.APPLE_CERTIFICATE_BASE64 != ''
-      #   uses: apple-actions/import-codesign-certs@v3
-      #   with:
-      #     p12-file-base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
-      #     p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      # 4. macOS Specific: Setup Code Signing
+      - name: Apple Code Signing Setup
+        if: matrix.platform == 'darwin'
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
       # 6. Build, Package, and Publish to GitHub Releases
       - name: Publish Electron App
@@ -80,7 +79,7 @@ jobs:
         env:
           NODE_ENV: production
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Apple credentials (used if code signing is enabled in forge.config)
+          # Apple credentials (used for code signing and notarization)
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}

@@ -16,7 +16,7 @@ const entitlementsPath = path.resolve(__dirname, 'entitlements.plist');
 const requestedSigningIdentity = process.env.APPLE_SIGNING_IDENTITY?.trim();
 let signingIdentity;
 
-if (requestedSigningIdentity) {
+if (requestedSigningIdentity && process.platform === 'darwin') {
   const availableSigningIdentities = execFileSync('security', ['find-identity', '-v', '-p', 'codesigning'], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'ignore'],
@@ -40,17 +40,17 @@ export const packagerConfig = {
   icon: iconPath,
   extraResource: ['dist'],
 
-  // ...(signingIdentity
-  //   ? {
-  //       osxSign: {
-  //         identity: signingIdentity,
-  //         hardenedRuntime: true,
-  //         entitlements: entitlementsPath,
-  //         signatureFlags: 'library',
-  //         continueOnError: false,
-  //       },
-  //     }
-  //   : {}),
+  ...(signingIdentity
+    ? {
+        osxSign: {
+          identity: signingIdentity,
+          hardenedRuntime: true,
+          entitlements: entitlementsPath,
+          signatureFlags: 'library',
+          continueOnError: false,
+        },
+      }
+    : {}),
 };
 
 export const hooks = {
