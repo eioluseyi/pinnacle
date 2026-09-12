@@ -1,15 +1,15 @@
-name: Build and Publish Release
+name: Build and Publish Desktop Release
 
 # Triggers automatically when you run `yarn version --new-version patch` (or minor/major)
-# and push the generated tag (e.g., v1.0.1)
+# and push the generated tag (e.g., desktop-v1.0.1)
 on:
   push:
     tags:
-      - "v*"
+      - "desktop-v*"
 
 jobs:
   publish:
-    name: Build & Publish (${{ matrix.platform }} - ${{ matrix.arch }})
+    name: Build & Publish Desktop (${{ matrix.platform }} - ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
 
     # Grants write permissions so GitHub Actions can publish releases to eioluseyi/pinnacle

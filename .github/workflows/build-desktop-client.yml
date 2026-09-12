@@ -1,0 +1,89 @@
+name: Build and Publish Desktop Client Release
+
+# Triggers automatically when you run `yarn version --new-version patch` (or minor/major)
+# and push the generated tag (e.g., desktop-client-v1.0.1)
+on:
+    push:
+        tags:
+            - "desktop-client-v*"
+
+jobs:
+    publish:
+        name: Build & Publish Desktop Client (${{ matrix.platform }} - ${{ matrix.arch }})
+        runs-on: ${{ matrix.os }}
+
+        # Grants write permissions so GitHub Actions can publish releases to eioluseyi/pinnacle
+        permissions:
+            contents: write
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    # macOS Apple Silicon (M-series)
+                    - os: macos-latest
+                      platform: darwin
+                      arch: arm64
+                    # macOS Universal/Intel build using a modern runner
+                    - os: macos-14
+                      platform: darwin
+                      arch: x64
+                    # # Windows x64
+                    # - os: windows-latest
+                    #   platform: win32
+                    #   arch: x64
+                    # # Linux x64
+                    # - os: ubuntu-latest
+                    #   platform: linux
+                    #   arch: x64
+
+        steps:
+            # 1. Checkout your project source code
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            # 2. Setup Node.js (v22.22.2)
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.22.2
+                  cache: "yarn"
+
+            # 3. Install dependencies with Yarn
+            - name: Install Dependencies
+              run: |
+                  git config --global http.sslVerify false
+                  yarn install --frozen-lockfile # Ensures exact versions from yarn.lock are installed
+
+            # 3.1 Create .env file from GitHub Secrets before building
+            - name: Create .env File
+              run: |
+                  echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
+                  echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" >> .env
+
+            # 3.2 Typecheck TypeScript
+            - name: Typecheck TypeScript
+              working-directory: apps/desktop-client
+              run: yarn typecheck
+
+            # 4. macOS Specific: Setup Code Signing (Optional)
+            # Uncomment if you add Apple Developer credentials to GitHub Repository Secrets
+            # - name: Apple Code Signing Setup
+            #   if: matrix.platform == 'darwin' && secrets.APPLE_CERTIFICATE_BASE64 != ''
+            #   uses: apple-actions/import-codesign-certs@v3
+            #   with:
+            #     p12-file-base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+            #     p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+            # 6. Build, Package, and Publish to GitHub Releases
+            - name: Publish Electron App
+              working-directory: apps/desktop-client
+              run: yarn build:client && yarn publish --arch=${{ matrix.arch }}
+              env:
+                  NODE_ENV: production
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  # Apple credentials (used if code signing is enabled in forge.config)
+                  APPLE_ID: ${{ secrets.APPLE_ID }}
+                  APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+                  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+                  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}

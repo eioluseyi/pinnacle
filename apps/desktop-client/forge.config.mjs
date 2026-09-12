@@ -40,17 +40,17 @@ export const packagerConfig = {
   icon: iconPath,
   extraResource: ['dist'],
 
-  ...(signingIdentity
-    ? {
-        osxSign: {
-          identity: signingIdentity,
-          'hardened-runtime': true,
-          entitlements: entitlementsPath,
-          'entitlements-inherit': entitlementsPath,
-          'signature-flags': 'library',
-        },
-      }
-    : {}),
+  // ...(signingIdentity
+  //   ? {
+  //       osxSign: {
+  //         identity: signingIdentity,
+  //         hardenedRuntime: true,
+  //         entitlements: entitlementsPath,
+  //         signatureFlags: 'library',
+  //         continueOnError: false,
+  //       },
+  //     }
+  //   : {}),
 };
 
 export const hooks = {
