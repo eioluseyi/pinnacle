@@ -17,7 +17,7 @@
     "build:electron": "node build-electron.mjs",
     "build:client": "yarn next build && yarn build:electron",
     "make": "cross-env NODE_ENV=production DEBUG=electron-forge:* NODE_OPTIONS=\"--trace-warnings --trace-uncaught\" electron-forge make",
-    "publish": "electron-forge publish",
+    "electron-publish": "electron-forge publish",
     "bump": "yarn version --patch --no-git-tag-version",
     "bump-minor": "yarn version --minor --no-git-tag-version",
     "bump-major": "yarn version --major --no-git-tag-version",

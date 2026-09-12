@@ -78,7 +78,7 @@ jobs:
             # 6. Build, Package, and Publish to GitHub Releases
             - name: Publish Electron App
               working-directory: apps/desktop-client
-              run: yarn build:client && yarn publish --arch=${{ matrix.arch }}
+              run: yarn build:client && yarn electron-publish --arch=${{ matrix.arch }}
               env:
                   NODE_ENV: production
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
