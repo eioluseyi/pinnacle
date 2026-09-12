@@ -2,7 +2,7 @@
   "name": "@pinnacle/desktop-client",
   "productName": "Pinnacle client",
   "description": "Client app to make Pinnacle app use smoother",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": false,
   "main": "dist/electron/main.cjs",
   "type": "module",
