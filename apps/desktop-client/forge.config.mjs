@@ -72,8 +72,8 @@ export const makers = [
   // {
   //   name: '@electron-forge/maker-squirrel',
   //   config: {
-  //     name: 'Pinnacle',
-  //     shortcutName: 'Pinnacle', // Exact name for Start Menu / Desktop shortcut
+  //     name: 'Pinnacle client',
+  //     shortcutName: 'Pinnacle client', // Exact name for Start Menu / Desktop shortcut
   //     setupIcon: `${iconPath}.ico`,
   //   },
   // },
@@ -81,7 +81,7 @@ export const makers = [
   {
     name: '@electron-forge/maker-dmg',
     config: {
-      name: 'Pinnacle',
+      name: 'Pinnacle client',
       icon: path.join(__dirname, 'dist/next/assets/icons/icon.icns'),
       format: 'ULFO',
     },
@@ -96,9 +96,9 @@ export const makers = [
   //   platforms: ['linux'],
   //   config: {
   //     options: {
-  //       name: 'pinnacle',
-  //       bin: 'Pinnacle',
-  //       productName: 'Pinnacle',
+  //       name: 'pinnacle-client',
+  //       bin: 'Pinnacle client',
+  //       productName: 'Pinnacle client',
   //       icon: `${iconPath}.png`,
   //     },
   //   },
@@ -108,9 +108,9 @@ export const makers = [
   //   platforms: ['linux'],
   //   config: {
   //     options: {
-  //       name: 'pinnacle',
-  //       bin: 'Pinnacle',
-  //       productName: 'Pinnacle',
+  //       name: 'pinnacle-client',
+  //       bin: 'Pinnacle client',
+  //       productName: 'Pinnacle client',
   //       icon: `${iconPath}.png`,
   //     },
   //   },
