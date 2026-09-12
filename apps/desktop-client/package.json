@@ -21,7 +21,12 @@
     "bump": "yarn version --patch",
     "bump-minor": "yarn version --minor",
     "bump-major": "yarn version --major",
-    "postversion": "git push && git push --tags",
+    "ver": "node -p \"require('./package.json').version\"",
+    "rm-tag": "git tag -d \"v$(yarn -s ver)\"",
+    "mk-tag": "v=$(yarn -s ver) && git tag -a \"desktop-client-v$v\" -m \"Release desktop-client v$v\"",
+    "push-br": "git push origin HEAD",
+    "push-tag": "git push origin \"desktop-client-v$(yarn -s ver)\"",
+    "postversion": "yarn rm-tag && yarn mk-tag && yarn push-br && yarn push-tag",
     "lint": "eslint ."
   },
   "dependencies": {
